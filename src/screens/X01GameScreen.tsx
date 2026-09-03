@@ -1,0 +1,225 @@
+import React, { useMemo, useState } from 'react';
+import { Alert, Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
+import type { Multiplier, X01Event, X01Game } from '../types';
+import { findCheckout, formatRoute } from '../game/checkout';
+import { dartLabel } from '../game/darts';
+import { possibleFinishDartCounts, replayX01, threeDartAverage } from '../game/x01';
+import { DartKeypad } from '../components/DartKeypad';
+import { TotalKeypad } from '../components/TotalKeypad';
+import { X01StatsTable } from '../components/Stats';
+import { Button, Screen, Segmented } from '../components/ui';
+import { colors, radius } from '../theme';
+
+const NUMBERS = Array.from({ length: 20 }, (_, i) => i + 1);
+
+export function X01GameScreen({
+  game,
+  onEvent,
+  onUndo,
+  onBack,
+  onAbandon,
+  onRematch,
+  onDone,
+}: {
+  game: X01Game;
+  onEvent: (ev: X01Event) => void;
+  onUndo: () => void;
+  onBack: () => void;
+  onAbandon: () => void;
+  onRematch: () => void;
+  onDone: () => void;
+}) {
+  const { setup } = game;
+  const state = useMemo(() => replayX01(setup, game.events), [setup, game.events]);
+  const [mode, setMode] = useState<'dart' | 'total'>('dart');
+  const [error, setError] = useState<string | null>(null);
+  const [pendingFinish, setPendingFinish] = useState<{ total: number; counts: number[] } | null>(null);
+
+  const p = state.currentPlayer;
+  const remaining = state.scores[p];
+  const dartsLeft = 3 - state.turnDarts.length;
+  const checkout = findCheckout(remaining, dartsLeft, setup.doubleOut);
+  const lastTurn = state.turns.length ? state.turns[state.turns.length - 1] : null;
+  const canUndo = game.events.length > 0;
+
+  const onDart = (v: number, m: Multiplier) => onEvent({ t: 'dart', v, m });
+
+  const onTotal = (total: number): boolean => {
+    setError(null);
+    if (total > remaining) {
+      setError(`Only ${remaining} left — that's a bust. Use Bust (0).`);
+      return false;
+    }
+    if (total === remaining) {
+      const counts = possibleFinishDartCounts(total, dartsLeft, setup.doubleOut);
+      if (counts.length === 0) {
+        setError(`${total} isn't a possible checkout.`);
+        return false;
+      }
+      if (counts.length === 1) {
+        onEvent({ t: 'total', total, darts: counts[0] });
+      } else {
+        setPendingFinish({ total, counts });
+      }
+      return true;
+    }
+    onEvent({ t: 'total', total });
+    return true;
+  };
+
+  const confirmEnd = () =>
+    Alert.alert('End game?', 'This game will be discarded and not saved to history.', [
+      { text: 'Keep playing', style: 'cancel' },
+      { text: 'End game', style: 'destructive', onPress: onAbandon },
+    ]);
+
+  const title = `${setup.startScore}${setup.legsToWin > 1 ? ` · Leg ${state.leg + 1}` : ''}`;
+
+  return (
+    <Screen title={title} onBack={onBack} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />}>
+      <ScrollView
+        horizontal={setup.players.length > 2}
+        showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0 }}
+        contentContainerStyle={styles.cards}
+      >
+        {setup.players.map((pl, i) => {
+          const active = i === p && !state.finished;
+          return (
+            <View key={pl.id} style={[styles.card, active && styles.cardActive, setup.players.length > 2 && { width: 150 }]}>
+              <View style={styles.cardHead}>
+                <Text style={[styles.name, active && { color: colors.accent }]} numberOfLines={1}>
+                  {pl.name}
+                </Text>
+                {setup.legsToWin > 1 ? <Text style={styles.legs}>{state.legsWon[i]} legs</Text> : null}
+              </View>
+              <Text style={styles.score}>{state.scores[i]}</Text>
+              <Text style={styles.avg}>avg {threeDartAverage(state.stats[i]).toFixed(1)}</Text>
+            </View>
+          );
+        })}
+      </ScrollView>
+
+      <View style={styles.turn}>
+        <View style={styles.turnDarts}>
+          {[0, 1, 2].map((i) => {
+            const d = state.turnDarts[i];
+            return (
+              <View key={i} style={[styles.dartSlot, d && styles.dartSlotFilled]}>
+                <Text style={styles.dartText}>{d ? dartLabel(d) : '·'}</Text>
+              </View>
+            );
+          })}
+          <Text style={styles.turnSum}>{state.turnStartScore - remaining}</Text>
+        </View>
+        <Text style={styles.info} numberOfLines={1}>
+          {checkout ? `Checkout: ${formatRoute(checkout)}` : lastTurn ? describeTurn(lastTurn.player, lastTurn.scored, lastTurn.bust, setup.players[lastTurn.player].name) : `${setup.players[p].name} to throw`}
+        </Text>
+      </View>
+
+      <View style={styles.modeRow}>
+        <Segmented
+          options={[
+            { label: 'Per dart', value: 'dart' },
+            { label: 'Turn total', value: 'total' },
+          ]}
+          value={mode}
+          onChange={(m) => {
+            setMode(m);
+            setError(null);
+          }}
+        />
+      </View>
+
+      <View style={styles.keypad}>
+        {mode === 'dart' ? (
+          <DartKeypad numbers={NUMBERS} onDart={onDart} onUndo={onUndo} canUndo={canUndo} />
+        ) : (
+          <TotalKeypad onTotal={onTotal} onUndo={onUndo} canUndo={canUndo} error={error} />
+        )}
+      </View>
+
+      <Modal visible={pendingFinish !== null} transparent animationType="fade">
+        <View style={styles.backdrop}>
+          <View style={styles.sheet}>
+            <Text style={styles.sheetTitle}>Checkout {pendingFinish?.total}!</Text>
+            <Text style={styles.sheetText}>How many darts did it take?</Text>
+            <View style={styles.sheetButtons}>
+              {pendingFinish?.counts.map((c) => (
+                <Button
+                  key={c}
+                  title={`${c} dart${c > 1 ? 's' : ''}`}
+                  style={{ flex: 1 }}
+                  onPress={() => {
+                    onEvent({ t: 'total', total: pendingFinish.total, darts: c });
+                    setPendingFinish(null);
+                  }}
+                />
+              ))}
+            </View>
+            <Button title="Cancel" variant="ghost" onPress={() => setPendingFinish(null)} />
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={state.finished} transparent animationType="slide">
+        <View style={styles.backdrop}>
+          <View style={styles.sheet}>
+            <Text style={styles.sheetTitle}>🏆 {state.winner !== null ? setup.players[state.winner].name : ''} wins!</Text>
+            <X01StatsTable state={state} />
+            <View style={{ height: 12 }} />
+            <Button title="Rematch" onPress={onRematch} />
+            <View style={{ height: 8 }} />
+            <Button title="Done" variant="secondary" onPress={onDone} />
+            <Button title="Undo last entry" variant="ghost" onPress={onUndo} />
+          </View>
+        </View>
+      </Modal>
+    </Screen>
+  );
+}
+
+function describeTurn(_player: number, scored: number, bust: boolean, name: string): string {
+  if (bust) return `${name}: bust`;
+  return `${name} scored ${scored}`;
+}
+
+const styles = StyleSheet.create({
+  cards: { flexDirection: 'row', gap: 8 },
+  card: {
+    flex: 1,
+    backgroundColor: colors.card,
+    borderRadius: radius,
+    padding: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  cardActive: { backgroundColor: colors.cardActive, borderColor: colors.accent },
+  cardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  name: { color: colors.text, fontSize: 16, fontWeight: '700', flex: 1 },
+  legs: { color: colors.muted, fontSize: 12, marginLeft: 6 },
+  score: { color: colors.text, fontSize: 48, fontWeight: '800', fontVariant: ['tabular-nums'], lineHeight: 54 },
+  avg: { color: colors.muted, fontSize: 13 },
+  turn: { marginTop: 10, gap: 6 },
+  turnDarts: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  dartSlot: {
+    width: 64,
+    height: 40,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dartSlotFilled: { backgroundColor: colors.card, borderColor: colors.accent },
+  dartText: { color: colors.text, fontSize: 18, fontWeight: '700' },
+  turnSum: { color: colors.muted, fontSize: 22, fontWeight: '800', marginLeft: 'auto', fontVariant: ['tabular-nums'] },
+  info: { color: colors.accent, fontSize: 16, fontWeight: '600', minHeight: 20 },
+  modeRow: { marginVertical: 8 },
+  keypad: { flex: 1, justifyContent: 'flex-end' },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
+  sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 8 },
+  sheetTitle: { color: colors.text, fontSize: 24, fontWeight: '800', textAlign: 'center' },
+  sheetText: { color: colors.muted, textAlign: 'center', fontSize: 15 },
+  sheetButtons: { flexDirection: 'row', gap: 8, marginTop: 8 },
+});
