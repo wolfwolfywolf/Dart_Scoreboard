@@ -7,7 +7,8 @@ React Native so one TypeScript codebase runs on both iOS and Android.
 
 - **x01 games**: 301, 501 and 701, with double-out or straight-out finishes
   and "first to N legs" matches.
-- **Cricket**: 15–20 and bull, standard marks/points scoring, marks-per-round.
+- **Cricket**: 15–20 and bull, standard marks/points scoring or a no-points
+  race to close, marks-per-round.
 - **Singles or doubles**: in doubles, two-person teams share a score and the
   teammates alternate throws. Stats are kept for the team and for each player.
 - **Two ways to enter scores** in x01: tap each dart (single/double/triple

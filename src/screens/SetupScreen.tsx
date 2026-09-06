@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import type { GameSetup, Player } from '../types';
+import type { CricketScoring, GameSetup, Player } from '../types';
 import { isTeam, newId } from '../game/darts';
 import { Button, Chip, Label, Screen, Segmented } from '../components/ui';
 import { colors, radius } from '../theme';
@@ -23,6 +23,9 @@ export function SetupScreen({
   );
   const [doubleOut, setDoubleOut] = useState(initial?.kind === 'x01' ? initial.doubleOut : true);
   const [legsToWin, setLegsToWin] = useState(initial?.kind === 'x01' ? initial.legsToWin : 1);
+  const [cricketScoring, setCricketScoring] = useState<CricketScoring>(
+    initial?.kind === 'cricket' ? (initial.scoring ?? 'points') : 'points',
+  );
   const [doubles, setDoubles] = useState(initial?.players.some(isTeam) ?? false);
   // Individual people, in order. In doubles they are paired up: 1 & 2, 3 & 4, ...
   const [people, setPeople] = useState<string[]>(
@@ -50,7 +53,7 @@ export function SetupScreen({
   const start = () => {
     if (!canStart) return;
     const withIds = players.map((p) => ({ ...p, id: newId() }));
-    if (type === 'cricket') onStart({ kind: 'cricket', players: withIds });
+    if (type === 'cricket') onStart({ kind: 'cricket', players: withIds, scoring: cricketScoring });
     else onStart({ kind: 'x01', startScore: type, doubleOut, legsToWin, players: withIds });
   };
 
@@ -70,7 +73,24 @@ export function SetupScreen({
           value={type}
           onChange={setType}
         />
-        {type !== 'cricket' ? (
+        {type === 'cricket' ? (
+          <>
+            <Label>Scoring</Label>
+            <Segmented
+              options={[
+                { label: 'Points', value: 'points' as CricketScoring },
+                { label: 'No points', value: 'closeOnly' as CricketScoring },
+              ]}
+              value={cricketScoring}
+              onChange={setCricketScoring}
+            />
+            <Text style={styles.hint}>
+              {cricketScoring === 'points'
+                ? 'Once you have closed a number, further hits on it score points while an opponent still has it open. Close everything with the most points to win.'
+                : 'First to close every number wins. Extra hits on a closed number do nothing.'}
+            </Text>
+          </>
+        ) : (
           <>
             <Label>Finish</Label>
             <Segmented
@@ -88,7 +108,7 @@ export function SetupScreen({
               onChange={setLegsToWin}
             />
           </>
-        ) : null}
+        )}
 
         <Label>Format</Label>
         <Segmented

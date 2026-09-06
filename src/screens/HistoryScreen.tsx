@@ -46,7 +46,12 @@ export function HistoryScreen({
           ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
           renderItem={({ item }) => {
             const winner = winnerName(item);
-            const type = item.setup.kind === 'x01' ? `${item.setup.startScore}${item.setup.legsToWin > 1 ? ` · first to ${item.setup.legsToWin}` : ''}` : 'Cricket';
+            const type =
+              item.setup.kind === 'x01'
+                ? `${item.setup.startScore}${item.setup.legsToWin > 1 ? ` · first to ${item.setup.legsToWin}` : ''}`
+                : item.setup.scoring === 'closeOnly'
+                  ? 'Cricket · no points'
+                  : 'Cricket';
             return (
               <Pressable
                 onPress={() => onOpen(item)}

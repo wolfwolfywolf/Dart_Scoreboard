@@ -71,6 +71,7 @@ export function replayCricket(setup: CricketSetup, events: CricketEvent[]): Cric
     st.sideTurns[p]++;
   };
 
+  const points = (setup.scoring ?? 'points') === 'points';
   const allClosed = (p: number) => st.marks[p].every((m) => m >= 3);
   const someoneOpen = (idx: number, except: number) =>
     st.marks.some((row, p) => p !== except && row[idx] < 3);
@@ -103,7 +104,7 @@ export function replayCricket(setup: CricketSetup, events: CricketEvent[]): Cric
           st.stats[p].marks++;
           member.marks++;
           turnMarks++;
-        } else if (someoneOpen(idx, p)) {
+        } else if (points && someoneOpen(idx, p)) {
           st.points[p] += value;
           st.stats[p].marks++;
           member.marks++;
@@ -114,7 +115,7 @@ export function replayCricket(setup: CricketSetup, events: CricketEvent[]): Cric
     }
 
     const others = st.points.filter((_, i) => i !== p);
-    if (allClosed(p) && (others.length === 0 || st.points[p] >= Math.max(...others))) {
+    if (allClosed(p) && (!points || others.length === 0 || st.points[p] >= Math.max(...others))) {
       st.finished = true;
       st.winner = p;
       pushTurn(p);

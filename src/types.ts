@@ -25,9 +25,17 @@ export interface X01Setup {
   players: Player[];
 }
 
+export type CricketScoring =
+  /** Standard: hits on a number you've closed score points while an opponent still has it open. */
+  | 'points'
+  /** Race to close: extra hits do nothing, first side to close everything wins. */
+  | 'closeOnly';
+
 export interface CricketSetup {
   kind: 'cricket';
   players: Player[];
+  /** Missing on games saved before this option existed; treated as 'points'. */
+  scoring?: CricketScoring;
 }
 
 export type GameSetup = X01Setup | CricketSetup;

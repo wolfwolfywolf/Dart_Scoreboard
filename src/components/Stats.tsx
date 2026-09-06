@@ -60,19 +60,23 @@ export function X01StatsTable({ state }: { state: X01State }) {
 }
 
 export function CricketStatsTable({ state }: { state: CricketState }) {
+  const withPoints = (state.setup.scoring ?? 'points') === 'points';
   const rows: Row[] = [];
   state.setup.players.forEach((p, i) => {
-    rows.push({
-      cells: [p.name + (state.winner === i ? ' 🏆' : ''), state.points[i], marksPerRound(state.stats[i]).toFixed(2), state.stats[i].dartsThrown],
-    });
+    const cells: (string | number)[] = [p.name + (state.winner === i ? ' 🏆' : ''), marksPerRound(state.stats[i]).toFixed(2), state.stats[i].dartsThrown];
+    if (withPoints) cells.splice(1, 0, state.points[i]);
+    rows.push({ cells });
     if (p.members && p.members.length > 1) {
       p.members.forEach((m, mi) => {
         const ms = state.memberStats[i][mi];
-        rows.push({ cells: [m, '', marksPerRound(ms).toFixed(2), ms.dartsThrown], sub: true });
+        const sub: (string | number)[] = [m, marksPerRound(ms).toFixed(2), ms.dartsThrown];
+        if (withPoints) sub.splice(1, 0, '');
+        rows.push({ cells: sub, sub: true });
       });
     }
   });
-  return <Table headers={['Player', 'Points', 'MPR', 'Darts']} rows={rows} />;
+  const headers = withPoints ? ['Player', 'Points', 'MPR', 'Darts'] : ['Player', 'MPR', 'Darts'];
+  return <Table headers={headers} rows={rows} />;
 }
 
 const styles = StyleSheet.create({

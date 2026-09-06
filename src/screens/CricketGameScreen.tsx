@@ -32,6 +32,7 @@ export function CricketGameScreen({
 }) {
   const { setup } = game;
   const state = useMemo(() => replayCricket(setup, game.events), [setup, game.events]);
+  const withPoints = (setup.scoring ?? 'points') === 'points';
   const p = state.currentPlayer;
 
   const confirmEnd = () =>
@@ -68,7 +69,7 @@ export function CricketGameScreen({
               <Text style={[styles.playerName, i === p && { color: chalk.yellow }]} numberOfLines={1}>
                 {pl.name}
               </Text>
-              <Text style={styles.points}>{state.points[i]}</Text>
+              {withPoints ? <Text style={styles.points}>{state.points[i]}</Text> : null}
             </View>
           ))}
         </View>

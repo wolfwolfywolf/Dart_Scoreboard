@@ -196,3 +196,16 @@ test('cricket doubles: teammates alternate', () => {
   assert.equal(st.memberStats[0][1].marks, 2);
   assert.equal(st.stats[0].marks, 5);
 });
+
+test('cricket without points: closing everything wins, extra hits score nothing', () => {
+  const c = (v: number, m: 1 | 2 | 3 = 1): CricketEvent => ({ t: 'dart', v, m });
+  const setup = { kind: 'cricket' as const, scoring: 'closeOnly' as const, players };
+  let st = replayCricket(setup, [c(20, 3), c(20), c(20)]);
+  assert.equal(st.points[0], 0);
+  assert.equal(st.marks[0][0], 3);
+  // Bob gets ahead on points in a standard game; in close-only Ann still wins by closing first.
+  const closeAll: CricketEvent[] = [c(20, 3), c(19, 3), c(18, 3), c(0), c(0), c(0), c(17, 3), c(16, 3), c(15, 3), c(0), c(0), c(0), c(25, 2), c(25)];
+  st = replayCricket(setup, closeAll);
+  assert.equal(st.finished, true);
+  assert.equal(st.winner, 0);
+});
