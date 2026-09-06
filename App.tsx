@@ -143,6 +143,10 @@ export default function App() {
       screen = (
         <SetupScreen
           recentPlayers={recentPlayers}
+          onRecentPlayersChange={(names) => {
+            setRecentPlayers(names);
+            saveRecentPlayers(names);
+          }}
           initial={route.initial}
           onBack={() => setRoute({ name: 'home' })}
           onStart={startGame}

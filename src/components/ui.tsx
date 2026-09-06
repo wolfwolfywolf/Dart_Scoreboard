@@ -88,10 +88,21 @@ export function Screen({
   );
 }
 
-export function Chip({ label, selected, onPress }: { label: string; selected?: boolean; onPress: () => void }) {
+export function Chip({
+  label,
+  selected,
+  onPress,
+  onLongPress,
+}: {
+  label: string;
+  selected?: boolean;
+  onPress: () => void;
+  onLongPress?: () => void;
+}) {
   return (
     <Pressable
       onPress={onPress}
+      onLongPress={onLongPress}
       style={({ pressed }) => [styles.chip, selected && styles.chipSelected, pressed && { opacity: 0.7 }]}
     >
       <Text style={[styles.chipText, selected && { color: colors.accentText, fontWeight: '700' }]}>{label}</Text>

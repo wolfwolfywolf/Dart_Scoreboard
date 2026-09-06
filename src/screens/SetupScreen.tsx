@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { CricketScoring, GameSetup, Player } from '../types';
 import { isTeam, newId } from '../game/darts';
 import { Button, Chip, Label, Screen, Segmented } from '../components/ui';
@@ -7,13 +7,17 @@ import { colors, radius } from '../theme';
 
 type GameType = 301 | 501 | 701 | 'cricket';
 
+type Editing = { name: string; where: 'game' | 'recent' };
+
 export function SetupScreen({
   recentPlayers,
+  onRecentPlayersChange,
   onBack,
   onStart,
   initial,
 }: {
   recentPlayers: string[];
+  onRecentPlayersChange: (names: string[]) => void;
   onBack: () => void;
   onStart: (setup: GameSetup) => void;
   initial?: GameSetup;
@@ -32,6 +36,35 @@ export function SetupScreen({
     initial?.players.flatMap((p) => (p.members?.length ? p.members : [p.name])) ?? [],
   );
   const [name, setName] = useState('');
+  const [editing, setEditing] = useState<Editing | null>(null);
+  const [editName, setEditName] = useState('');
+
+  const openEditor = (target: Editing) => {
+    setEditing(target);
+    setEditName(target.name);
+  };
+
+  /** Rename everywhere the name appears: fixing a spelling in the game fixes the remembered name too. */
+  const applyRename = () => {
+    if (!editing) return;
+    const next = editName.trim();
+    if (!next || next === editing.name) {
+      setEditing(null);
+      return;
+    }
+    setPeople(people.map((n) => (n === editing.name ? next : n)));
+    if (recentPlayers.includes(editing.name)) {
+      onRecentPlayersChange(recentPlayers.map((n) => (n === editing.name ? next : n)));
+    }
+    setEditing(null);
+  };
+
+  const applyDelete = () => {
+    if (!editing) return;
+    if (editing.where === 'game') setPeople(people.filter((n) => n !== editing.name));
+    else onRecentPlayersChange(recentPlayers.filter((n) => n !== editing.name));
+    setEditing(null);
+  };
 
   const players: Player[] = doubles
     ? Array.from({ length: Math.floor(people.length / 2) }, (_, i) => {
@@ -128,13 +161,16 @@ export function SetupScreen({
         {people.map((n, i) => (
           <View key={`${n}-${i}`}>
             {doubles && i % 2 === 0 ? <Text style={styles.teamHeading}>Team {i / 2 + 1}</Text> : null}
-            <View style={styles.playerRow}>
+            <Pressable
+              onLongPress={() => openEditor({ name: n, where: 'game' })}
+              style={({ pressed }) => [styles.playerRow, pressed && { opacity: 0.7 }]}
+            >
               <Text style={styles.playerIndex}>{i + 1}</Text>
               <Text style={styles.playerName}>{n}</Text>
               <Pressable onPress={() => setPeople(people.filter((_, j) => j !== i))} hitSlop={10}>
                 <Text style={styles.remove}>✕</Text>
               </Pressable>
-            </View>
+            </Pressable>
           </View>
         ))}
         <View style={styles.addRow}>
@@ -154,15 +190,42 @@ export function SetupScreen({
         {suggestions.length ? (
           <View style={styles.chips}>
             {suggestions.map((n) => (
-              <Chip key={n} label={`+ ${n}`} onPress={() => addPlayer(n)} />
+              <Chip key={n} label={`+ ${n}`} onPress={() => addPlayer(n)} onLongPress={() => openEditor({ name: n, where: 'recent' })} />
             ))}
           </View>
         ) : null}
         {people.length === 0 ? <Text style={styles.hint}>Add at least one player to start.</Text> : null}
+        {people.length || suggestions.length ? <Text style={styles.hint}>Long-press a name to fix its spelling or delete it.</Text> : null}
         {unpaired ? <Text style={styles.hint}>{unpaired} needs a teammate. Add one more player or remove them.</Text> : null}
         <View style={{ height: 24 }} />
         <Button title="Start game" onPress={start} disabled={!canStart} />
       </ScrollView>
+
+      <Modal visible={editing !== null} transparent animationType="fade" onRequestClose={() => setEditing(null)}>
+        <View style={styles.backdrop}>
+          <View style={styles.sheet}>
+            <Text style={styles.sheetTitle}>Edit player</Text>
+            <TextInput
+              value={editName}
+              onChangeText={setEditName}
+              style={styles.input}
+              autoFocus
+              autoCapitalize="words"
+              returnKeyType="done"
+              onSubmitEditing={applyRename}
+              placeholder="Name"
+              placeholderTextColor={colors.muted}
+            />
+            <Button title="Save" onPress={applyRename} disabled={!editName.trim()} />
+            <Button
+              title={editing?.where === 'game' ? 'Remove from this game' : 'Forget this name'}
+              variant="danger"
+              onPress={applyDelete}
+            />
+            <Button title="Cancel" variant="ghost" onPress={() => setEditing(null)} />
+          </View>
+        </View>
+      </Modal>
     </Screen>
   );
 }
@@ -195,6 +258,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
+  sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 10 },
+  sheetTitle: { color: colors.text, fontSize: 20, fontWeight: '800', textAlign: 'center' },
   hint: { color: colors.muted, marginTop: 12, marginBottom: 8, lineHeight: 20 },
   teamHeading: { color: colors.accent, fontSize: 13, fontWeight: '700', marginTop: 6, marginBottom: 4 },
 });
