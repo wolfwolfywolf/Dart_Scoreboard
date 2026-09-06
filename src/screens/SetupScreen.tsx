@@ -208,7 +208,7 @@ export function SetupScreen({
             <TextInput
               value={editName}
               onChangeText={setEditName}
-              style={styles.input}
+              style={[styles.input, styles.inputBlock]}
               autoFocus
               autoCapitalize="words"
               returnKeyType="done"
@@ -257,6 +257,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
+  // The add-player input flexes to share its row; in the edit sheet it must size itself.
+  inputBlock: { flex: 0, alignSelf: 'stretch' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
   sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 10 },
