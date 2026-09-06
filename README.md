@@ -37,6 +37,11 @@ Everything is stored locally on the device; there's no account or server.
 3. Scan the QR code that appears with your camera (iOS) or the Expo Go app
    (Android). The app loads over your Wi-Fi and reloads when you edit code.
 
+Both phones and tablets are supported, in portrait and landscape. On a wide
+landscape screen the scoreboard sits beside the keypad.
+
+To preview in a desktop browser instead of a phone, run `npm run web`.
+
 ## Building installable apps
 
 Use [EAS Build](https://docs.expo.dev/build/introduction/) to produce store-ready

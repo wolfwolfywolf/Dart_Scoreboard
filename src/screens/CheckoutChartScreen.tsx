@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { CHART_MAX, CHECKOUT_CHART } from '../game/checkoutChart';
 import { Button, Screen } from '../components/ui';
+import { useLayout } from '../layout';
 import { colors, radius } from '../theme';
 
 /** The standard double-out chart, 170 down to 2, with the current score highlighted. */
@@ -12,10 +13,13 @@ export function CheckoutChartScreen({ highlight, onClose }: { highlight: number 
     return out;
   }, []);
 
+  const { width } = useLayout();
+  const numColumns = width >= 1000 ? 4 : width >= 700 ? 3 : 2;
+
   const yours = highlight !== null && highlight >= 2 && highlight <= CHART_MAX ? CHECKOUT_CHART[highlight] ?? null : null;
 
   return (
-    <Screen title="Double out chart" right={<Button title="Close" variant="ghost" small onPress={onClose} />}>
+    <Screen title="Double out chart" right={<Button title="Close" variant="ghost" small onPress={onClose} />} fullWidth>
       {highlight !== null && highlight > 1 ? (
         <View style={styles.yours}>
           <Text style={styles.yoursLabel}>You need {highlight}</Text>
@@ -23,8 +27,9 @@ export function CheckoutChartScreen({ highlight, onClose }: { highlight: number 
         </View>
       ) : null}
       <FlatList
+        key={numColumns}
         data={rows}
-        numColumns={2}
+        numColumns={numColumns}
         keyExtractor={(r) => String(r.score)}
         columnWrapperStyle={styles.columns}
         contentContainerStyle={{ paddingBottom: 24 }}

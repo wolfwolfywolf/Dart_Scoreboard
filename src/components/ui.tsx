@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CONTENT_MAX_WIDTH } from '../layout';
 import { colors, radius, spacing } from '../theme';
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
@@ -56,12 +57,15 @@ export function Screen({
   right,
   children,
   scroll,
+  fullWidth,
 }: {
   title: string;
   onBack?: () => void;
   right?: React.ReactNode;
   children: React.ReactNode;
   scroll?: boolean;
+  /** Use the whole width on tablets instead of centring a phone-width column. */
+  fullWidth?: boolean;
 }) {
   const insets = useSafeAreaInsets();
   return (
@@ -79,7 +83,7 @@ export function Screen({
         </Text>
         <View style={[styles.headerSide, { alignItems: 'flex-end' }]}>{right}</View>
       </View>
-      <View style={[styles.body, scroll && { padding: 0 }]}>{children}</View>
+      <View style={[styles.body, scroll && { padding: 0 }, !fullWidth && styles.bodyCapped]}>{children}</View>
     </View>
   );
 }
@@ -135,6 +139,7 @@ const styles = StyleSheet.create({
   back: { color: colors.accent, fontSize: 18, fontWeight: '600' },
   title: { flex: 1, textAlign: 'center', color: colors.text, fontSize: 20, fontWeight: '700' },
   body: { flex: 1, padding: spacing },
+  bodyCapped: { width: '100%', maxWidth: CONTENT_MAX_WIDTH, alignSelf: 'center' },
   button: {
     paddingVertical: 16,
     paddingHorizontal: 20,

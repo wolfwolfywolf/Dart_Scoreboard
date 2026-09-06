@@ -6,7 +6,8 @@ import { dartLabel } from '../game/darts';
 import { DartKeypad } from '../components/DartKeypad';
 import { CricketStatsTable } from '../components/Stats';
 import { Button, Screen } from '../components/ui';
-import { colors, radius } from '../theme';
+import { keyHeightFor, useLayout } from '../layout';
+import { colors, radius, spacing } from '../theme';
 
 const MARK_GLYPH = ['', '/', 'X', 'Ⓧ'];
 
@@ -39,8 +40,12 @@ export function CricketGameScreen({
 
   const onDart = (v: number, m: Multiplier) => onEvent({ t: 'dart', v, m });
 
-  return (
-    <Screen title="Cricket" onBack={onBack} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />}>
+  const { width, height, isWide, twoPane } = useLayout();
+  const keypadPaneWidth = Math.min(460, Math.max(360, width * 0.45));
+  const keyHeight = keyHeightFor(height - (twoPane ? 130 : 420), 3, 38, isWide ? 72 : 60);
+
+  const board = (
+    <View style={twoPane ? styles.paneLeft : undefined}>
       <View style={styles.board}>
         <View style={styles.row}>
           <View style={styles.numberCell} />
@@ -86,10 +91,34 @@ export function CricketGameScreen({
         })}
         <Text style={styles.toThrow}>{state.thrower} to throw</Text>
       </View>
+    </View>
+  );
 
-      <View style={styles.keypad}>
-        <DartKeypad numbers={[20, 19, 18, 17, 16, 15]} onDart={onDart} onUndo={onUndo} canUndo={game.events.length > 0} />
-      </View>
+  const keypad = (
+    <View style={twoPane ? [styles.paneRight, { width: keypadPaneWidth }] : styles.keypad}>
+      <DartKeypad
+        numbers={[20, 19, 18, 17, 16, 15]}
+        onDart={onDart}
+        onUndo={onUndo}
+        canUndo={game.events.length > 0}
+        keyHeight={keyHeight}
+      />
+    </View>
+  );
+
+  return (
+    <Screen title="Cricket" onBack={onBack} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />} fullWidth={twoPane}>
+      {twoPane ? (
+        <View style={styles.panes}>
+          {board}
+          {keypad}
+        </View>
+      ) : (
+        <>
+          {board}
+          {keypad}
+        </>
+      )}
 
       <Modal visible={state.finished} transparent animationType="slide">
         <View style={styles.backdrop}>
@@ -134,6 +163,9 @@ const styles = StyleSheet.create({
   dartText: { color: colors.text, fontSize: 18, fontWeight: '700' },
   toThrow: { color: colors.accent, fontWeight: '600', marginLeft: 'auto', fontSize: 15 },
   keypad: { flex: 1, justifyContent: 'flex-end' },
+  panes: { flex: 1, flexDirection: 'row', gap: spacing },
+  paneLeft: { flex: 1 },
+  paneRight: { justifyContent: 'flex-end' },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
   sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 8 },
   sheetTitle: { color: colors.text, fontSize: 24, fontWeight: '800', textAlign: 'center' },

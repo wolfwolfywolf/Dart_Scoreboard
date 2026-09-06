@@ -11,11 +11,13 @@ export function TotalKeypad({
   onUndo,
   canUndo,
   error,
+  keyHeight,
 }: {
   onTotal: (total: number) => boolean;
   onUndo: () => void;
   canUndo: boolean;
   error: string | null;
+  keyHeight?: number;
 }) {
   const [entry, setEntry] = useState('');
 
@@ -36,7 +38,7 @@ export function TotalKeypad({
       </View>
       <View style={styles.row}>
         {QUICK.map((q) => (
-          <Key key={q} label={String(q)} onPress={() => submit(q)} dim />
+          <Key key={q} label={String(q)} onPress={() => submit(q)} dim height={keyHeight} />
         ))}
       </View>
       {[
@@ -46,18 +48,18 @@ export function TotalKeypad({
       ].map((row) => (
         <View style={styles.row} key={row[0]}>
           {row.map((k) => (
-            <Key key={k} label={k} onPress={() => type(k)} big />
+            <Key key={k} label={k} onPress={() => type(k)} big height={keyHeight} />
           ))}
         </View>
       ))}
       <View style={styles.row}>
-        <Key label="⌫" onPress={() => setEntry(entry.slice(0, -1))} big dim />
-        <Key label="0" onPress={() => type('0')} big />
-        <Key label="Enter" onPress={() => submit(entry === '' ? 0 : Number(entry))} big color={colors.accent} />
+        <Key label="⌫" onPress={() => setEntry(entry.slice(0, -1))} big dim height={keyHeight} />
+        <Key label="0" onPress={() => type('0')} big height={keyHeight} />
+        <Key label="Enter" onPress={() => submit(entry === '' ? 0 : Number(entry))} big color={colors.accent} height={keyHeight} />
       </View>
       <View style={styles.row}>
-        <Key label="Bust (0)" onPress={() => submit(0)} dim />
-        <Key label="Undo" onPress={onUndo} dim disabled={!canUndo} />
+        <Key label="Bust (0)" onPress={() => submit(0)} dim height={keyHeight} />
+        <Key label="Undo" onPress={onUndo} dim disabled={!canUndo} height={keyHeight} />
       </View>
     </View>
   );

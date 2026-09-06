@@ -13,11 +13,13 @@ export function DartKeypad({
   onDart,
   onUndo,
   canUndo,
+  keyHeight,
 }: {
   numbers: number[];
   onDart: (v: number, m: Multiplier) => void;
   onUndo: () => void;
   canUndo: boolean;
+  keyHeight?: number;
 }) {
   const [mult, setMult] = useState<Multiplier>(1);
 
@@ -30,7 +32,7 @@ export function DartKeypad({
   // separate row of odd-looking controls.
   const columns = 5;
   const keys: React.ReactNode[] = numbers.map((n) => (
-    <Key key={n} label={mult === 1 ? String(n) : mult === 2 ? `D${n}` : `T${n}`} onPress={() => hit(n)} />
+    <Key key={n} label={mult === 1 ? String(n) : mult === 2 ? `D${n}` : `T${n}`} onPress={() => hit(n)} height={keyHeight} />
   ));
   keys.push(
     <Key
@@ -38,9 +40,10 @@ export function DartKeypad({
       label={mult === 3 ? 'Bull' : mult === 2 ? 'Bull 50' : 'Bull 25'}
       onPress={() => hit(25, mult === 3 ? 2 : mult)}
       disabled={mult === 3}
+      height={keyHeight}
     />,
-    <Key key="miss" label="Miss" onPress={() => hit(0, 1)} />,
-    <Key key="undo" label="Undo" onPress={onUndo} disabled={!canUndo} />,
+    <Key key="miss" label="Miss" onPress={() => hit(0, 1)} height={keyHeight} />,
+    <Key key="undo" label="Undo" onPress={onUndo} disabled={!canUndo} height={keyHeight} />,
   );
   const rows: React.ReactNode[][] = [];
   for (let i = 0; i < keys.length; i += columns) rows.push(keys.slice(i, i + columns));
@@ -55,6 +58,7 @@ export function DartKeypad({
             onPress={() => setMult(m)}
             active={mult === m}
             activeColor={m === 2 ? colors.double : m === 3 ? colors.triple : colors.accent}
+            height={keyHeight}
           />
         ))}
       </View>
@@ -80,6 +84,7 @@ export function Key({
   disabled,
   flex = 1,
   big,
+  height,
 }: {
   label: string;
   onPress: () => void;
@@ -90,6 +95,8 @@ export function Key({
   disabled?: boolean;
   flex?: number;
   big?: boolean;
+  /** Fixed key height; when set it replaces the default padding-based height. */
+  height?: number;
 }) {
   return (
     <Pressable
@@ -99,6 +106,7 @@ export function Key({
         styles.key,
         { flex },
         big && { paddingVertical: 18 },
+        height !== undefined && { height: big ? Math.round(height * 1.15) : height, paddingVertical: 0 },
         color ? { backgroundColor: color } : null,
         dim && { backgroundColor: '#111827' },
         active && { backgroundColor: activeColor ?? colors.accent },

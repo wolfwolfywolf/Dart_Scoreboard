@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Modal, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Alert, Modal, StyleSheet, Text, View } from 'react-native';
 import type { Multiplier, X01Event, X01Game } from '../types';
 import { findCheckout, formatRoute } from '../game/checkout';
 import { dartLabel, isTeam } from '../game/darts';
@@ -9,6 +9,7 @@ import { TotalKeypad } from '../components/TotalKeypad';
 import { X01StatsTable } from '../components/Stats';
 import { Button, Screen, Segmented } from '../components/ui';
 import { CheckoutChartScreen } from './CheckoutChartScreen';
+import { keyHeightFor, useLayout } from '../layout';
 import { colors, radius, spacing } from '../theme';
 
 const NUMBERS = Array.from({ length: 20 }, (_, i) => i + 1);
@@ -44,13 +45,24 @@ export function X01GameScreen({
   const lastTurn = state.turns.length ? state.turns[state.turns.length - 1] : null;
   const canUndo = game.events.length > 0;
 
-  // Scoreboard layout: 1–2 players side by side, 3 squeezed into one row, 4+ in rows of two.
-  const { width } = useWindowDimensions();
+  // On tablets (or a phone held sideways) the scoreboard sits beside the keypad
+  // instead of above it. The keypad pane keeps a comfortable fixed width.
+  const { width, height, isWide, twoPane, contentWidth } = useLayout();
+  const keypadPaneWidth = Math.min(460, Math.max(360, width * 0.45));
+  const scoreboardWidth = twoPane ? width - spacing * 2 - keypadPaneWidth - spacing : contentWidth - spacing * 2;
+
+  // Scoreboard: 1–2 players side by side, 3 squeezed into one row, 4+ in rows of two.
   const n = setup.players.length;
   const columns = n <= 3 ? n : 2;
-  const compact = n >= 3;
+  const compact = n >= 3 && !twoPane;
+  const big = isWide && n <= 2;
   const cardGap = 8;
-  const cardWidth = (width - spacing * 2 - cardGap * (columns - 1)) / columns;
+  const cardWidth = (scoreboardWidth - cardGap * (columns - 1)) / columns;
+
+  // Keypad keys grow on big screens and shrink so everything still fits on small ones.
+  const keypadRows = mode === 'dart' ? 6 : 7;
+  const reserved = twoPane ? 190 : 200 + (n >= 4 ? 2 : 1) * (compact ? 96 : big ? 150 : 120);
+  const keyHeight = keyHeightFor(height - reserved, keypadRows, 38, isWide ? 72 : 60);
 
   const onDart = (v: number, m: Multiplier) => onEvent({ t: 'dart', v, m });
 
@@ -89,8 +101,8 @@ export function X01GameScreen({
     return <CheckoutChartScreen highlight={state.finished ? null : remaining} onClose={() => setShowChart(false)} />;
   }
 
-  return (
-    <Screen title={title} onBack={onBack} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />}>
+  const scoreboard = (
+    <View style={twoPane ? styles.paneLeft : undefined}>
       <View style={styles.cards}>
         {setup.players.map((pl, i) => {
           const active = i === p && !state.finished;
@@ -105,7 +117,7 @@ export function X01GameScreen({
                 </Text>
                 {setup.legsToWin > 1 ? <Text style={styles.legs}>{state.legsWon[i]} legs</Text> : null}
               </View>
-              <Text style={[styles.score, compact && styles.scoreCompact]}>{state.scores[i]}</Text>
+              <Text style={[styles.score, compact && styles.scoreCompact, big && styles.scoreBig]}>{state.scores[i]}</Text>
               {isTeam(pl) ? (
                 <View style={styles.members}>
                   {pl.members!.map((m, mi) => {
@@ -140,7 +152,11 @@ export function X01GameScreen({
           {checkout ? `Checkout: ${formatRoute(checkout)}` : lastTurn ? describeTurn(lastTurn.scored, lastTurn.bust, lastTurn.thrower) : `${state.thrower} to throw`}
         </Text>
       </View>
+    </View>
+  );
 
+  const entry = (
+    <View style={twoPane ? [styles.paneRight, { width: keypadPaneWidth }] : styles.entryStacked}>
       <View style={styles.modeRow}>
         <Segmented
           options={[
@@ -160,11 +176,27 @@ export function X01GameScreen({
 
       <View style={styles.keypad}>
         {mode === 'dart' ? (
-          <DartKeypad numbers={NUMBERS} onDart={onDart} onUndo={onUndo} canUndo={canUndo} />
+          <DartKeypad numbers={NUMBERS} onDart={onDart} onUndo={onUndo} canUndo={canUndo} keyHeight={keyHeight} />
         ) : (
-          <TotalKeypad onTotal={onTotal} onUndo={onUndo} canUndo={canUndo} error={error} />
+          <TotalKeypad onTotal={onTotal} onUndo={onUndo} canUndo={canUndo} error={error} keyHeight={keyHeight} />
         )}
       </View>
+    </View>
+  );
+
+  return (
+    <Screen title={title} onBack={onBack} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />} fullWidth={twoPane}>
+      {twoPane ? (
+        <View style={styles.panes}>
+          {scoreboard}
+          {entry}
+        </View>
+      ) : (
+        <>
+          {scoreboard}
+          {entry}
+        </>
+      )}
 
       <Modal visible={pendingFinish !== null} transparent animationType="fade">
         <View style={styles.backdrop}>
@@ -212,6 +244,10 @@ function describeTurn(scored: number, bust: boolean, name: string): string {
 }
 
 const styles = StyleSheet.create({
+  panes: { flex: 1, flexDirection: 'row', gap: spacing },
+  paneLeft: { flex: 1 },
+  paneRight: { justifyContent: 'flex-end' },
+  entryStacked: { flex: 1 },
   cards: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   card: {
     backgroundColor: colors.card,
@@ -224,6 +260,7 @@ const styles = StyleSheet.create({
   cardCompact: { padding: 8 },
   nameCompact: { fontSize: 14 },
   scoreCompact: { fontSize: 34, lineHeight: 40 },
+  scoreBig: { fontSize: 72, lineHeight: 80 },
   cardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   name: { color: colors.text, fontSize: 16, fontWeight: '700', flex: 1 },
   legs: { color: colors.muted, fontSize: 12, marginLeft: 6 },
@@ -249,7 +286,7 @@ const styles = StyleSheet.create({
   info: { color: colors.accent, fontSize: 16, fontWeight: '600', minHeight: 20 },
   modeRow: { marginVertical: 8, gap: 8 },
   chartButton: { paddingVertical: 8 },
-  keypad: { flex: 1, justifyContent: 'flex-end' },
+  keypad: { flex: 1, justifyContent: 'flex-end', flexGrow: 1 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
   sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 8 },
   sheetTitle: { color: colors.text, fontSize: 24, fontWeight: '800', textAlign: 'center' },
