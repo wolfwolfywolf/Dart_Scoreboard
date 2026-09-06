@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Alert, Modal, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Multiplier, X01Event, X01Game } from '../types';
-import { findCheckout, formatRoute } from '../game/checkout';
+import { continuedRoute, findCheckout, findCheckouts, formatRoute } from '../game/checkout';
 import { dartLabel, isTeam } from '../game/darts';
 import { possibleFinishDartCounts, replayX01, threeDartAverage } from '../game/x01';
 import { DartKeypad } from '../components/DartKeypad';
@@ -46,7 +46,12 @@ export function X01GameScreen({
   const p = state.currentPlayer;
   const remaining = state.scores[p];
   const dartsLeft = 3 - state.turnDarts.length;
-  const checkout = findCheckout(remaining, dartsLeft, setup.doubleOut);
+  // Keep following the route suggested at the start of the turn while the darts match it;
+  // otherwise suggest afresh for the new score with the darts that are left.
+  const plan = continuedRoute(state.turnStartScore, state.turnDarts, setup.doubleOut);
+  const options = findCheckouts(remaining, dartsLeft, setup.doubleOut, 3);
+  const checkout = plan ?? options[0] ?? null;
+  const alternatives = options.filter((r) => formatRoute(r) !== (checkout ? formatRoute(checkout) : '')).slice(0, 2);
   const lastTurn = state.turns.length ? state.turns[state.turns.length - 1] : null;
   const canUndo = game.events.length > 0;
 
@@ -111,7 +116,12 @@ export function X01GameScreen({
 
   if (showChart) {
     return (
-      <CheckoutChartScreen highlight={state.finished ? null : remaining} dartsLeft={dartsLeft} onClose={() => setShowChart(false)} />
+      <CheckoutChartScreen
+        highlight={state.finished ? null : remaining}
+        dartsLeft={dartsLeft}
+        plan={checkout ? formatRoute(checkout) : null}
+        onClose={() => setShowChart(false)}
+      />
     );
   }
 
@@ -204,13 +214,20 @@ export function X01GameScreen({
           ) : null}
         </View>
         {!state.finished && remaining <= 170 ? (
-          <Text style={[styles.checkoutLine, !checkout && styles.checkoutNone]} numberOfLines={1}>
-            {checkout
-              ? `${remaining} out: ${formatRoute(checkout)}`
-              : dartsLeft < 3 && findCheckout(remaining, 3, setup.doubleOut)
-                ? `No out for ${remaining} with ${dartsLeft} dart${dartsLeft === 1 ? '' : 's'} left`
-                : `No out for ${remaining}`}
-          </Text>
+          <View>
+            <Text style={[styles.checkoutLine, !checkout && styles.checkoutNone]} numberOfLines={1}>
+              {checkout
+                ? `${remaining} out: ${formatRoute(checkout)}`
+                : dartsLeft < 3 && findCheckout(remaining, 3, setup.doubleOut)
+                  ? `No out for ${remaining} with ${dartsLeft} dart${dartsLeft === 1 ? '' : 's'} left`
+                  : `No out for ${remaining}`}
+            </Text>
+            {alternatives.length ? (
+              <Text style={styles.checkoutAlt} numberOfLines={1}>
+                or {alternatives.map(formatRoute).join('   ·   ')}
+              </Text>
+            ) : null}
+          </View>
         ) : null}
       </View>
 
@@ -332,6 +349,7 @@ const styles = StyleSheet.create({
   chartButtonInline: { paddingVertical: 0, justifyContent: 'center' },
   checkoutLine: { color: colors.accent, fontSize: 17, fontWeight: '700', textAlign: 'center', paddingVertical: 2 },
   checkoutNone: { color: colors.muted, fontWeight: '500' },
+  checkoutAlt: { color: colors.muted, fontSize: 14, textAlign: 'center', paddingBottom: 2 },
   keypad: { flex: 1, justifyContent: 'flex-end', flexGrow: 1 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
   sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 8 },

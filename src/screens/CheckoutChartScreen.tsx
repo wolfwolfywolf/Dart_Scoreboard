@@ -13,10 +13,13 @@ import { colors, radius } from '../theme';
 export function CheckoutChartScreen({
   highlight,
   dartsLeft = 3,
+  plan,
   onClose,
 }: {
   highlight: number | null;
   dartsLeft?: number;
+  /** The route the scoreboard is currently showing, so the banner agrees with it. */
+  plan?: string | null;
   onClose: () => void;
 }) {
   const top = highlight !== null && highlight >= 2 && highlight <= CHART_MAX ? highlight : CHART_MAX;
@@ -35,7 +38,7 @@ export function CheckoutChartScreen({
 
   // The banner respects how many darts are left in the turn; the list is always the full-turn chart.
   const yoursRoute = highlight !== null ? findCheckout(highlight, dartsLeft, true) : null;
-  const yours = yoursRoute ? formatRoute(yoursRoute) : null;
+  const yours = plan ?? (yoursRoute ? formatRoute(yoursRoute) : null);
 
   return (
     <Screen title="Double out chart" right={<Button title="Close" variant="ghost" small onPress={onClose} />} fullWidth>

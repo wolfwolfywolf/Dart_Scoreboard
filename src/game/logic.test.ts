@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { findCheckout, formatRoute } from './checkout';
+import { continuedRoute, findCheckout, findCheckouts, formatRoute } from './checkout';
 import { replayX01, threeDartAverage } from './x01';
 import { replayCricket } from './cricket';
 import { CHECKOUT_CHART, chartRoute, chartTotal } from './checkoutChart';
@@ -225,4 +225,26 @@ test('cut-throat cricket: points go to open opponents and the lowest score wins'
   st = replayCricket(setup, [c(20, 3), c(20), c(0), c(0), c(0), c(0), c(0), c(0), c(0), ...closeRest]);
   assert.equal(st.finished, true);
   assert.equal(st.winner, 0);
+});
+
+test('checkout plan continues when the suggested dart is hit', () => {
+  // 121 suggests T20 T11 D14; after T20 the plan should still be T11 D14, not a different 61.
+  assert.equal(formatRoute(findCheckout(121, 3, true)!), 'T20  T11  D14');
+  assert.equal(formatRoute(continuedRoute(121, [{ v: 20, m: 3 }], true)!), 'T11  D14');
+  assert.equal(formatRoute(continuedRoute(121, [{ v: 20, m: 3 }, { v: 11, m: 3 }], true)!), 'D14');
+  // Missing the plan drops it, so a fresh suggestion for the new score takes over.
+  assert.equal(continuedRoute(121, [{ v: 20, m: 1 }], true), null);
+  assert.equal(formatRoute(continuedRoute(150, [], true)!), 'T20  T18  D18');
+});
+
+test('alternative checkouts are distinct and fit the darts left', () => {
+  const two = findCheckouts(80, 2, true);
+  assert.equal(formatRoute(two[0]), 'T20  D10');
+  assert.ok(two.some((r) => formatRoute(r) === 'T16  D16'));
+  assert.ok(two.every((r) => r.length <= 2 && r[r.length - 1].m === 2));
+  assert.deepEqual(findCheckouts(32, 1, true).map(formatRoute), ['D16']);
+  assert.equal(findCheckouts(101, 1, true).length, 0);
+  const three = findCheckouts(100, 3, true);
+  assert.equal(formatRoute(three[0]), 'T20  D20');
+  assert.equal(new Set(three.map(formatRoute)).size, three.length);
 });

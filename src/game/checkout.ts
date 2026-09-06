@@ -78,3 +78,69 @@ export function findCheckout(remaining: number, dartsLeft: number, doubleOut: bo
 export function formatRoute(route: Dart[]): string {
   return route.map(dartLabel).join('  ');
 }
+
+function sameDart(a: Dart, b: Dart): boolean {
+  return a.v === b.v && a.m === b.m;
+}
+
+/**
+ * Up to `limit` distinct ways to finish `remaining` with at most `dartsLeft` darts,
+ * best first. The first entry is always what findCheckout would suggest.
+ */
+export function findCheckouts(remaining: number, dartsLeft: number, doubleOut: boolean, limit = 3): Dart[][] {
+  const out: Dart[][] = [];
+  const seen = new Set<string>();
+  const add = (route: Dart[] | null) => {
+    if (!route || out.length >= limit) return;
+    const key = formatRoute(route);
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push(route);
+  };
+  add(findCheckout(remaining, dartsLeft, doubleOut));
+  if (remaining <= 0 || dartsLeft <= 0 || (doubleOut && remaining === 1)) return out;
+
+  const finals = doubleOut ? FINISH_DOUBLES : FINISH_ANY;
+  // One dart: only exact hits.
+  for (const last of finals) if (dartValue(last) === remaining) add([last]);
+  if (dartsLeft >= 2) {
+    for (const last of finals) {
+      const need = remaining - dartValue(last);
+      if (need <= 0) continue;
+      const first = exactDart(need);
+      if (first) add([first, last]);
+    }
+  }
+  if (dartsLeft >= 3) {
+    for (const last of finals) {
+      const need = remaining - dartValue(last);
+      if (need <= 1) continue;
+      for (const first of SETUP_DARTS) {
+        const rest = need - dartValue(first);
+        if (rest <= 0) continue;
+        const mid = exactDart(rest);
+        if (mid) {
+          add([first, mid, last]);
+          break;
+        }
+      }
+      if (out.length >= limit) break;
+    }
+  }
+  return out;
+}
+
+/**
+ * The plan to show mid-turn. If the thrower is following the route suggested at the
+ * start of the turn (each dart so far matched it), keep showing the rest of that route
+ * rather than switching to a different finish for the new score.
+ */
+export function continuedRoute(turnStartScore: number, turnDarts: Dart[], doubleOut: boolean): Dart[] | null {
+  let route = findCheckout(turnStartScore, 3, doubleOut);
+  if (!route) return null;
+  for (const thrown of turnDarts) {
+    if (route.length === 0 || !sameDart(route[0], thrown)) return null;
+    route = route.slice(1);
+  }
+  return route.length ? route : null;
+}
