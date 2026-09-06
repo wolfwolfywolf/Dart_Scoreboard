@@ -8,6 +8,7 @@ import { DartKeypad } from '../components/DartKeypad';
 import { TotalKeypad } from '../components/TotalKeypad';
 import { X01StatsTable } from '../components/Stats';
 import { Button, Screen, Segmented } from '../components/ui';
+import { CheckoutChartScreen } from './CheckoutChartScreen';
 import { colors, radius, spacing } from '../theme';
 
 const NUMBERS = Array.from({ length: 20 }, (_, i) => i + 1);
@@ -34,6 +35,7 @@ export function X01GameScreen({
   const [mode, setMode] = useState<'dart' | 'total'>('dart');
   const [error, setError] = useState<string | null>(null);
   const [pendingFinish, setPendingFinish] = useState<{ total: number; counts: number[] } | null>(null);
+  const [showChart, setShowChart] = useState(false);
 
   const p = state.currentPlayer;
   const remaining = state.scores[p];
@@ -82,6 +84,10 @@ export function X01GameScreen({
     ]);
 
   const title = `${setup.startScore}${setup.legsToWin > 1 ? ` · Leg ${state.leg + 1}` : ''}`;
+
+  if (showChart) {
+    return <CheckoutChartScreen highlight={state.finished ? null : remaining} onClose={() => setShowChart(false)} />;
+  }
 
   return (
     <Screen title={title} onBack={onBack} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />}>
@@ -147,6 +153,9 @@ export function X01GameScreen({
             setError(null);
           }}
         />
+        {setup.doubleOut ? (
+          <Button title="Double out chart" variant="secondary" small onPress={() => setShowChart(true)} style={styles.chartButton} />
+        ) : null}
       </View>
 
       <View style={styles.keypad}>
@@ -238,7 +247,8 @@ const styles = StyleSheet.create({
   dartText: { color: colors.text, fontSize: 18, fontWeight: '700' },
   turnSum: { color: colors.muted, fontSize: 22, fontWeight: '800', marginLeft: 'auto', fontVariant: ['tabular-nums'] },
   info: { color: colors.accent, fontSize: 16, fontWeight: '600', minHeight: 20 },
-  modeRow: { marginVertical: 8 },
+  modeRow: { marginVertical: 8, gap: 8 },
+  chartButton: { paddingVertical: 8 },
   keypad: { flex: 1, justifyContent: 'flex-end' },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
   sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 8 },

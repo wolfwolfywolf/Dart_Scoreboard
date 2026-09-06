@@ -1,4 +1,5 @@
 import type { Dart } from '../types';
+import { chartRoute } from './checkoutChart';
 import { dartLabel, dartValue } from './darts';
 
 // Preferred finishing doubles, roughly in the order players like to be left on.
@@ -54,6 +55,11 @@ function finishTwo(remaining: number, doubleOut: boolean): Dart[] | null {
 export function findCheckout(remaining: number, dartsLeft: number, doubleOut: boolean): Dart[] | null {
   if (remaining <= 0 || dartsLeft <= 0) return null;
   if (doubleOut && remaining === 1) return null;
+  if (doubleOut) {
+    // Prefer the route everyone knows from the pub chart when there are enough darts for it.
+    const standard = chartRoute(remaining);
+    if (standard && standard.length <= dartsLeft) return standard;
+  }
   const one = finishOne(remaining, doubleOut);
   if (one) return [one];
   if (dartsLeft < 2) return null;

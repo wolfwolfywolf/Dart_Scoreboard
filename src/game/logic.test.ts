@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { findCheckout, formatRoute } from './checkout';
 import { replayX01, threeDartAverage } from './x01';
 import { replayCricket } from './cricket';
+import { CHECKOUT_CHART, chartRoute, chartTotal } from './checkoutChart';
 import type { CricketEvent, X01Event, X01Setup } from '../types';
 
 const players = [
@@ -12,11 +13,31 @@ const players = [
 const setup501: X01Setup = { kind: 'x01', startScore: 501, doubleOut: true, legsToWin: 1, players };
 const d = (v: number, m: 1 | 2 | 3 = 1): X01Event => ({ t: 'dart', v, m });
 
+test('checkout chart entries add up and end on a double', () => {
+  const bogeys = [169, 168, 166, 165, 163, 162, 159];
+  for (let n = 2; n <= 170; n++) {
+    const route = chartRoute(n);
+    if (bogeys.includes(n)) {
+      assert.equal(route, null, `${n} should be a bogey`);
+      continue;
+    }
+    assert.ok(route, `${n} missing from chart`);
+    assert.equal(chartTotal(route), n, `${n}: ${CHECKOUT_CHART[n]}`);
+    assert.ok(route.length <= 3);
+    assert.equal(route[route.length - 1].m, 2, `${n} must finish on a double`);
+  }
+});
+
 test('checkout suggestions', () => {
   assert.equal(formatRoute(findCheckout(170, 3, true)!), 'T20  T20  Bull');
   assert.equal(formatRoute(findCheckout(167, 3, true)!), 'T20  T19  Bull');
   assert.equal(formatRoute(findCheckout(100, 2, true)!), 'T20  D20');
+  assert.equal(formatRoute(findCheckout(61, 3, true)!), 'T15  D8');
   assert.equal(formatRoute(findCheckout(41, 2, true)!), '9  D16');
+  // With too few darts for the chart route, fall back to what is still possible.
+  assert.equal(findCheckout(170, 2, true), null);
+  assert.equal(findCheckout(120, 2, true), null);
+  assert.equal(formatRoute(findCheckout(110, 2, true)!), 'T20  Bull');
   assert.equal(formatRoute(findCheckout(32, 1, true)!), 'D16');
   assert.equal(formatRoute(findCheckout(50, 1, true)!), 'Bull');
   assert.equal(findCheckout(169, 3, true), null);
