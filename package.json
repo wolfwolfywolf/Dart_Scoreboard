@@ -1,5 +1,5 @@
 {
-  "name": "darts-app",
+  "name": "dart-scoreboard",
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
