@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Alert, Modal, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { CricketEvent, CricketGame, Multiplier } from '../types';
-import { CRICKET_NUMBERS, marksPerRound, replayCricket } from '../game/cricket';
+import { CRICKET_NUMBERS, replayCricket } from '../game/cricket';
 import { dartLabel } from '../game/darts';
 import { DartKeypad } from '../components/DartKeypad';
 import { CricketStatsTable } from '../components/Stats';
@@ -69,7 +69,6 @@ export function CricketGameScreen({
                 {pl.name}
               </Text>
               <Text style={styles.points}>{state.points[i]}</Text>
-              <Text style={styles.mpr}>MPR {marksPerRound(state.stats[i]).toFixed(1)}</Text>
             </View>
           ))}
         </View>
@@ -168,7 +167,6 @@ const styles = StyleSheet.create({
   playerCell: { flex: 1, alignItems: 'center', paddingVertical: 6, borderRadius: 6 },
   playerName: { color: chalk.white, fontFamily: fonts.chalkHand, fontSize: 16 },
   points: { color: chalk.white, fontSize: 26, fontFamily: fonts.chalk },
-  mpr: { color: chalk.dim, fontSize: 12, fontFamily: fonts.chalkHand },
   markCell: { flex: 1, alignItems: 'center', paddingVertical: 4 },
   cellTall: { justifyContent: 'center', alignSelf: 'stretch' },
   activeCol: { backgroundColor: chalk.highlight },

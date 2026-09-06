@@ -52,18 +52,18 @@ export function X01GameScreen({
 
   // On tablets (or a phone held sideways) the scoreboard sits beside the keypad
   // instead of above it. The keypad pane keeps a comfortable fixed width.
-  const { width, height, isWide, twoPane, contentWidth } = useLayout();
+  const { width, height, isWide, twoPane } = useLayout();
   const keypadPaneWidth = Math.min(460, Math.max(360, width * 0.45));
-  const scoreboardWidth = twoPane ? width - spacing * 2 - keypadPaneWidth - spacing : contentWidth - spacing * 2;
 
   // Scoreboard: 1–2 players side by side, 3 squeezed into one row, 4+ in rows of two.
+  // Cards are laid out as explicit rows that share their width by flex, so no
+  // width arithmetic (and no chance of a card wrapping onto its own row).
   const n = setup.players.length;
   const columns = n <= 3 ? n : 2;
   const compact = n >= 3 && !twoPane;
   const big = isWide && n <= 2;
-  const cardGap = 8;
-  const boardPadding = 5 + 1 + 8; // frame + edge + inner padding, each side
-  const cardWidth = (scoreboardWidth - boardPadding * 2 - cardGap * (columns - 1)) / columns;
+  const cardRowsList: number[][] = [];
+  for (let i = 0; i < n; i += columns) cardRowsList.push(setup.players.map((_, idx) => idx).slice(i, i + columns));
 
   // Keypad keys grow on big screens and shrink so everything still fits on small ones.
   // Everything that isn't keypad: safe areas, header, padding, the scoreboard (measured,
@@ -117,12 +117,15 @@ export function X01GameScreen({
     <View style={twoPane ? styles.paneLeft : undefined} onLayout={(e) => setScoreboardH(e.nativeEvent.layout.height)}>
       <Chalkboard>
       <View style={styles.cards}>
-        {setup.players.map((pl, i) => {
+        {cardRowsList.map((row, r) => (
+        <View key={r} style={styles.cardRow}>
+        {row.map((i) => {
+          const pl = setup.players[i];
           const active = i === p && !state.finished;
           return (
             <View
               key={pl.id}
-              style={[styles.card, active && styles.cardActive, { width: cardWidth }, compact && styles.cardCompact]}
+              style={[styles.card, active && styles.cardActive, compact && styles.cardCompact]}
             >
               <View style={styles.cardHead}>
                 <Text style={[styles.name, compact && styles.nameCompact, active && { color: chalk.yellow }]} numberOfLines={1}>
@@ -147,6 +150,8 @@ export function X01GameScreen({
             </View>
           );
         })}
+        </View>
+        ))}
       </View>
       </Chalkboard>
 
@@ -270,8 +275,10 @@ const styles = StyleSheet.create({
   paneLeft: { flex: 1 },
   paneRight: { justifyContent: 'flex-end' },
   entryStacked: { flex: 1 },
-  cards: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 8 },
+  cards: { gap: 8, padding: 8 },
+  cardRow: { flexDirection: 'row', gap: 8 },
   card: {
+    flex: 1,
     borderRadius: 6,
     padding: 10,
     borderWidth: 1.5,
