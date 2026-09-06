@@ -114,3 +114,41 @@ if __name__ == '__main__':
     save(render(1024, 0.56, (0, 0, 0, 0), with_dart=False, mono=(255, 255, 255, 255)), 'android-icon-monochrome.png')
     save(render(1024, 0.60, (0, 0, 0, 0)), 'splash-icon.png')
     save(render(64, 0.90, (0, 0, 0, 0)), 'favicon.png')
+
+
+def chalkboard_texture(size=512, seed=7):
+    """A tileable dark-green slate with chalk dust and faint smudges for the scoreboard background."""
+    import random
+    rnd = random.Random(seed)
+    base = (36, 58, 46, 255)
+    img = Image.new('RGBA', (size, size), base)
+    px = img.load()
+    for y in range(size):
+        for x in range(size):
+            n = rnd.randint(-9, 9)
+            r, g, b, a = px[x, y]
+            px[x, y] = (max(0, r + n), max(0, g + n), max(0, b + n), a)
+    d = ImageDraw.Draw(img, 'RGBA')
+    # faint eraser smudges
+    for _ in range(14):
+        cx, cy = rnd.randint(0, size), rnd.randint(0, size)
+        w, h = rnd.randint(90, 260), rnd.randint(20, 70)
+        smudge = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+        sd = ImageDraw.Draw(smudge)
+        sd.ellipse([cx - w, cy - h, cx + w, cy + h], fill=(255, 255, 255, 7))
+        # keep it tileable by also drawing wrapped copies
+        for dx in (-size, 0, size):
+            for dy in (-size, 0, size):
+                sd.ellipse([cx - w + dx, cy - h + dy, cx + w + dx, cy + h + dy], fill=(255, 255, 255, 5))
+        img.alpha_composite(smudge)
+    # chalk dust specks
+    for _ in range(1800):
+        x, y = rnd.randint(0, size - 1), rnd.randint(0, size - 1)
+        r, g, b, a = px[x, y]
+        k = rnd.randint(10, 40)
+        px[x, y] = (min(255, r + k), min(255, g + k), min(255, b + k), a)
+    return img
+
+
+if __name__ == '__main__':
+    save(chalkboard_texture(), 'chalkboard.png')

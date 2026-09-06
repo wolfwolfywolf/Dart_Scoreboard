@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Alert, Modal, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Multiplier, X01Event, X01Game } from '../types';
 import { findCheckout, formatRoute } from '../game/checkout';
 import { dartLabel, isTeam } from '../game/darts';
@@ -10,7 +11,8 @@ import { X01StatsTable } from '../components/Stats';
 import { Button, Screen, Segmented } from '../components/ui';
 import { CheckoutChartScreen } from './CheckoutChartScreen';
 import { keyHeightFor, useLayout } from '../layout';
-import { colors, radius, spacing } from '../theme';
+import { chalk, colors, fonts, radius, spacing } from '../theme';
+import { Chalkboard } from '../components/Chalkboard';
 
 const NUMBERS = Array.from({ length: 20 }, (_, i) => i + 1);
 
@@ -37,6 +39,9 @@ export function X01GameScreen({
   const [error, setError] = useState<string | null>(null);
   const [pendingFinish, setPendingFinish] = useState<{ total: number; counts: number[] } | null>(null);
   const [showChart, setShowChart] = useState(false);
+  // Measured heights of the parts above the keypad, so key size is worked out from real space.
+  const [scoreboardH, setScoreboardH] = useState<number | null>(null);
+  const [modeRowH, setModeRowH] = useState(90);
 
   const p = state.currentPlayer;
   const remaining = state.scores[p];
@@ -57,15 +62,18 @@ export function X01GameScreen({
   const compact = n >= 3 && !twoPane;
   const big = isWide && n <= 2;
   const cardGap = 8;
-  const cardWidth = (scoreboardWidth - cardGap * (columns - 1)) / columns;
+  const boardPadding = 5 + 1 + 8; // frame + edge + inner padding, each side
+  const cardWidth = (scoreboardWidth - boardPadding * 2 - cardGap * (columns - 1)) / columns;
 
   // Keypad keys grow on big screens and shrink so everything still fits on small ones.
-  // "Reserved" is everything on screen that isn't keypad: header, safe areas, the
-  // scoreboard cards, the turn strip and the mode row.
+  // Everything that isn't keypad: safe areas, header, padding, the scoreboard (measured,
+  // with an estimate until the first layout), the mode row and gaps.
+  const insets = useSafeAreaInsets();
   const keypadRows = mode === 'dart' ? 6 : 7;
   const cardRows = n >= 4 ? Math.ceil(n / 2) : 1;
-  const cardHeight = compact ? 96 : big ? 150 : 120;
-  const reserved = twoPane ? 150 : 270 + cardRows * cardHeight;
+  const estimatedScoreboard = 40 + cardRows * (compact ? 100 : big ? 160 : 130) + 76;
+  const scoreboardSpace = twoPane ? 0 : (scoreboardH ?? estimatedScoreboard);
+  const reserved = insets.top + insets.bottom + 52 + spacing * 2 + scoreboardSpace + modeRowH + 16;
   const keyHeight = keyHeightFor(height - reserved, keypadRows, 34, isWide ? 72 : 60);
 
   const onDart = (v: number, m: Multiplier) => onEvent({ t: 'dart', v, m });
@@ -106,7 +114,8 @@ export function X01GameScreen({
   }
 
   const scoreboard = (
-    <View style={twoPane ? styles.paneLeft : undefined}>
+    <View style={twoPane ? styles.paneLeft : undefined} onLayout={(e) => setScoreboardH(e.nativeEvent.layout.height)}>
+      <Chalkboard>
       <View style={styles.cards}>
         {setup.players.map((pl, i) => {
           const active = i === p && !state.finished;
@@ -116,7 +125,7 @@ export function X01GameScreen({
               style={[styles.card, active && styles.cardActive, { width: cardWidth }, compact && styles.cardCompact]}
             >
               <View style={styles.cardHead}>
-                <Text style={[styles.name, compact && styles.nameCompact, active && { color: colors.accent }]} numberOfLines={1}>
+                <Text style={[styles.name, compact && styles.nameCompact, active && { color: chalk.yellow }]} numberOfLines={1}>
                   {pl.name}
                 </Text>
                 {setup.legsToWin > 1 ? <Text style={styles.legs}>{state.legsWon[i]} legs</Text> : null}
@@ -139,6 +148,7 @@ export function X01GameScreen({
           );
         })}
       </View>
+      </Chalkboard>
 
       <View style={styles.turn}>
         <View style={styles.turnDarts}>
@@ -161,7 +171,7 @@ export function X01GameScreen({
 
   const entry = (
     <View style={twoPane ? [styles.paneRight, { width: keypadPaneWidth }] : styles.entryStacked}>
-      <View style={[styles.modeRow, twoPane && styles.modeRowInline]}>
+      <View style={[styles.modeRow, twoPane && styles.modeRowInline]} onLayout={(e) => setModeRowH(e.nativeEvent.layout.height)}>
         <View style={twoPane ? { flex: 1 } : undefined}>
           <Segmented
             options={[
@@ -260,27 +270,27 @@ const styles = StyleSheet.create({
   paneLeft: { flex: 1 },
   paneRight: { justifyContent: 'flex-end' },
   entryStacked: { flex: 1 },
-  cards: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  cards: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 8 },
   card: {
-    backgroundColor: colors.card,
-    borderRadius: radius,
-    padding: 12,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderRadius: 6,
+    padding: 10,
+    borderWidth: 1.5,
+    borderColor: chalk.line,
+    borderStyle: 'dashed',
   },
-  cardActive: { backgroundColor: colors.cardActive, borderColor: colors.accent },
+  cardActive: { backgroundColor: chalk.highlight, borderColor: chalk.yellow, borderStyle: 'solid' },
   cardCompact: { padding: 8 },
-  nameCompact: { fontSize: 14 },
-  scoreCompact: { fontSize: 34, lineHeight: 40 },
-  scoreBig: { fontSize: 72, lineHeight: 80 },
+  nameCompact: { fontSize: 15 },
+  scoreCompact: { fontSize: 36, lineHeight: 42 },
+  scoreBig: { fontSize: 76, lineHeight: 84 },
   cardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  name: { color: colors.text, fontSize: 16, fontWeight: '700', flex: 1 },
-  legs: { color: colors.muted, fontSize: 12, marginLeft: 6 },
-  score: { color: colors.text, fontSize: 48, fontWeight: '800', fontVariant: ['tabular-nums'], lineHeight: 54 },
-  avg: { color: colors.muted, fontSize: 13 },
+  name: { color: chalk.white, fontSize: 18, fontFamily: fonts.chalkHand, flex: 1 },
+  legs: { color: chalk.dim, fontSize: 13, fontFamily: fonts.chalkHand, marginLeft: 6 },
+  score: { color: chalk.white, fontSize: 50, fontFamily: fonts.chalk, lineHeight: 58 },
+  avg: { color: chalk.dim, fontSize: 14, fontFamily: fonts.chalkHand },
   members: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 2 },
-  member: { color: colors.muted, fontSize: 13 },
-  memberUp: { color: colors.accent, fontWeight: '700' },
+  member: { color: chalk.dim, fontSize: 14, fontFamily: fonts.chalkHand },
+  memberUp: { color: chalk.yellow },
   turn: { marginTop: 10, gap: 6 },
   turnDarts: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   dartSlot: {

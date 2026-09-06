@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Alert, Modal, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { CricketEvent, CricketGame, Multiplier } from '../types';
 import { CRICKET_NUMBERS, marksPerRound, replayCricket } from '../game/cricket';
 import { dartLabel } from '../game/darts';
@@ -7,7 +8,8 @@ import { DartKeypad } from '../components/DartKeypad';
 import { CricketStatsTable } from '../components/Stats';
 import { Button, Screen } from '../components/ui';
 import { keyHeightFor, useLayout } from '../layout';
-import { colors, radius, spacing } from '../theme';
+import { chalk, colors, fonts, radius, spacing } from '../theme';
+import { Chalkboard } from '../components/Chalkboard';
 
 const MARK_GLYPH = ['', '/', 'X', 'Ⓧ'];
 
@@ -41,22 +43,29 @@ export function CricketGameScreen({
   const onDart = (v: number, m: Multiplier) => onEvent({ t: 'dart', v, m });
 
   const { width, height, isWide, twoPane } = useLayout();
+  const insets = useSafeAreaInsets();
+  const [boardH, setBoardH] = useState<number | null>(null);
   const keypadPaneWidth = Math.min(460, Math.max(360, width * 0.45));
   // Side by side: four keypad rows (multiplier + three of keys) centred beside a board
-  // that stretches to fill the column. Stacked: the board keeps its natural height.
-  const keyHeight = twoPane ? keyHeightFor(height - 150, 4, 38, 96) : keyHeightFor(height - 430, 4, 38, isWide ? 72 : 60);
+  // that stretches to fill the column. Stacked: the board keeps its natural height and
+  // the keys use whatever is left below it.
+  const chrome = insets.top + insets.bottom + 52 + spacing * 2 + 16;
+  const keyHeight = twoPane
+    ? keyHeightFor(height - chrome - 60, 4, 38, 96)
+    : keyHeightFor(height - chrome - (boardH ?? 330), 4, 38, isWide ? 72 : 60);
   const tall = twoPane;
   const boardRowHeight = tall ? Math.max(30, (height - 200) / 8) : undefined;
-  const markSize = tall ? Math.min(34, Math.max(20, boardRowHeight! * 0.55)) : 20;
+  const markSize = tall ? Math.min(34, Math.max(20, boardRowHeight! * 0.55)) : 22;
 
   const board = (
-    <View style={twoPane ? styles.paneLeft : undefined}>
+    <View style={twoPane ? styles.paneLeft : undefined} onLayout={(e) => setBoardH(e.nativeEvent.layout.height)}>
+      <Chalkboard style={tall ? styles.boardTall : undefined}>
       <View style={[styles.board, tall && styles.boardTall]}>
         <View style={styles.row}>
           <View style={styles.numberCell} />
           {setup.players.map((pl, i) => (
             <View key={pl.id} style={[styles.playerCell, i === p && !state.finished && styles.activeCol]}>
-              <Text style={[styles.playerName, i === p && { color: colors.accent }]} numberOfLines={1}>
+              <Text style={[styles.playerName, i === p && { color: chalk.yellow }]} numberOfLines={1}>
                 {pl.name}
               </Text>
               <Text style={styles.points}>{state.points[i]}</Text>
@@ -69,13 +78,20 @@ export function CricketGameScreen({
           return (
             <View key={n} style={[styles.row, tall && { flex: 1, alignItems: 'stretch' }]}>
               <View style={[styles.numberCell, tall && { justifyContent: 'center' }]}>
-                <Text style={[styles.number, tall && { fontSize: markSize }, dead && { color: colors.muted, textDecorationLine: 'line-through' }]}>
+                <Text
+                  style={[
+                    styles.number,
+                    tall && { fontSize: n === 25 ? Math.round(markSize * 0.7) : markSize },
+                    dead && { color: chalk.dim, textDecorationLine: 'line-through' },
+                  ]}
+                  numberOfLines={1}
+                >
                   {n === 25 ? 'Bull' : n}
                 </Text>
               </View>
               {setup.players.map((pl, i) => (
                 <View key={pl.id} style={[styles.markCell, tall && styles.cellTall, i === p && !state.finished && styles.activeCol]}>
-                  <Text style={[styles.mark, tall && { fontSize: markSize + 4, minHeight: 0 }, state.marks[i][idx] >= 3 && { color: colors.accent }]}>
+                  <Text style={[styles.mark, tall && { fontSize: markSize + 4, minHeight: 0 }, state.marks[i][idx] >= 3 && { color: chalk.yellow }]}>
                     {MARK_GLYPH[Math.min(state.marks[i][idx], 3)]}
                   </Text>
                 </View>
@@ -84,6 +100,7 @@ export function CricketGameScreen({
           );
         })}
       </View>
+      </Chalkboard>
 
       <View style={styles.turnDarts}>
         {[0, 1, 2].map((i) => {
@@ -143,19 +160,19 @@ export function CricketGameScreen({
 }
 
 const styles = StyleSheet.create({
-  board: { backgroundColor: colors.card, borderRadius: radius, padding: 6 },
+  board: { padding: 6 },
   boardTall: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center' },
-  numberCell: { width: 56, alignItems: 'center', paddingVertical: 4 },
-  number: { color: colors.text, fontSize: 18, fontWeight: '800' },
-  playerCell: { flex: 1, alignItems: 'center', paddingVertical: 6, borderRadius: 8 },
-  playerName: { color: colors.text, fontWeight: '700', fontSize: 14 },
-  points: { color: colors.text, fontSize: 24, fontWeight: '800', fontVariant: ['tabular-nums'] },
-  mpr: { color: colors.muted, fontSize: 11 },
+  numberCell: { width: 62, alignItems: 'center', paddingVertical: 4 },
+  number: { color: chalk.white, fontSize: 20, fontFamily: fonts.chalk },
+  playerCell: { flex: 1, alignItems: 'center', paddingVertical: 6, borderRadius: 6 },
+  playerName: { color: chalk.white, fontFamily: fonts.chalkHand, fontSize: 16 },
+  points: { color: chalk.white, fontSize: 26, fontFamily: fonts.chalk },
+  mpr: { color: chalk.dim, fontSize: 12, fontFamily: fonts.chalkHand },
   markCell: { flex: 1, alignItems: 'center', paddingVertical: 4 },
   cellTall: { justifyContent: 'center', alignSelf: 'stretch' },
-  activeCol: { backgroundColor: colors.cardActive },
-  mark: { color: colors.text, fontSize: 20, fontWeight: '800', minHeight: 26 },
+  activeCol: { backgroundColor: chalk.highlight },
+  mark: { color: chalk.white, fontSize: 22, fontFamily: fonts.chalkHand, minHeight: 28 },
   turnDarts: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
   dartSlot: {
     width: 64,

@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useFonts } from 'expo-font';
+import { FrederickatheGreat_400Regular } from '@expo-google-fonts/fredericka-the-great';
+import { WalterTurncoat_400Regular } from '@expo-google-fonts/walter-turncoat';
 import type { CricketEvent, Game, GameSetup, X01Event } from './src/types';
 import { newId } from './src/game/darts';
 import { isGameFinished as isFinished, isX01Game as isX01 } from './src/game/replay';
@@ -34,6 +37,7 @@ export default function App() {
   const [game, setGame] = useState<Game | null>(null);
   const [history, setHistory] = useState<Game[]>([]);
   const [recentPlayers, setRecentPlayers] = useState<string[]>([]);
+  const [fontsLoaded, fontError] = useFonts({ FrederickatheGreat_400Regular, WalterTurncoat_400Regular });
 
   useEffect(() => {
     Promise.all([loadCurrentGame(), loadHistory(), loadRecentPlayers()]).then(([g, h, r]) => {
@@ -120,7 +124,8 @@ export default function App() {
     startGame({ ...setup, players });
   };
 
-  if (!ready) return <View style={styles.root} />;
+  // If the fonts fail to load we carry on with the system font rather than show nothing.
+  if (!ready || (!fontsLoaded && !fontError)) return <View style={styles.root} />;
 
   let screen: React.ReactNode;
   switch (route.name) {

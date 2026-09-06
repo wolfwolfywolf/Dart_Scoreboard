@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { Game } from '../types';
 import { Button, Screen } from '../components/ui';
-import { colors } from '../theme';
+import { colors, fonts } from '../theme';
 
 export function describeGame(game: Game): string {
   const names = game.setup.players.map((p) => p.name).join(' · ');
@@ -45,7 +45,7 @@ export function HomeScreen({
 const styles = StyleSheet.create({
   hero: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   logo: { fontSize: 72 },
-  title: { color: colors.text, fontSize: 36, fontWeight: '800', marginTop: 12 },
+  title: { color: colors.text, fontSize: 40, fontFamily: fonts.chalk, marginTop: 12 },
   subtitle: { color: colors.muted, fontSize: 16, marginTop: 6 },
   actions: { gap: 12, paddingBottom: 12 },
   resumeHint: { color: colors.muted, textAlign: 'center', marginTop: 6, fontSize: 14 },
