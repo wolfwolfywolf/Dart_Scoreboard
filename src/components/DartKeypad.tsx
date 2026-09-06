@@ -38,7 +38,6 @@ export function DartKeypad({
       label={mult === 3 ? 'Bull' : mult === 2 ? 'Bull 50' : 'Bull 25'}
       onPress={() => hit(25, mult === 3 ? 2 : mult)}
       disabled={mult === 3}
-      color={mult === 2 ? colors.double : undefined}
     />,
     <Key key="miss" label="Miss" onPress={() => hit(0, 1)} />,
     <Key key="undo" label="Undo" onPress={onUndo} disabled={!canUndo} />,
@@ -107,7 +106,7 @@ export function Key({
         disabled && { opacity: 0.35 },
       ]}
     >
-      <Text style={[styles.keyText, active && { color: colors.accentText }, dim && { color: colors.muted }]}>{label}</Text>
+      <Text style={[styles.keyText, active && { color: colors.onActive }, dim && { color: colors.muted }]}>{label}</Text>
     </Pressable>
   );
 }

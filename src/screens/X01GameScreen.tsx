@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Modal, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import type { Multiplier, X01Event, X01Game } from '../types';
 import { findCheckout, formatRoute } from '../game/checkout';
 import { dartLabel, isTeam } from '../game/darts';
@@ -8,7 +8,7 @@ import { DartKeypad } from '../components/DartKeypad';
 import { TotalKeypad } from '../components/TotalKeypad';
 import { X01StatsTable } from '../components/Stats';
 import { Button, Screen, Segmented } from '../components/ui';
-import { colors, radius } from '../theme';
+import { colors, radius, spacing } from '../theme';
 
 const NUMBERS = Array.from({ length: 20 }, (_, i) => i + 1);
 
@@ -41,6 +41,14 @@ export function X01GameScreen({
   const checkout = findCheckout(remaining, dartsLeft, setup.doubleOut);
   const lastTurn = state.turns.length ? state.turns[state.turns.length - 1] : null;
   const canUndo = game.events.length > 0;
+
+  // Scoreboard layout: 1–2 players side by side, 3 squeezed into one row, 4+ in rows of two.
+  const { width } = useWindowDimensions();
+  const n = setup.players.length;
+  const columns = n <= 3 ? n : 2;
+  const compact = n >= 3;
+  const cardGap = 8;
+  const cardWidth = (width - spacing * 2 - cardGap * (columns - 1)) / columns;
 
   const onDart = (v: number, m: Multiplier) => onEvent({ t: 'dart', v, m });
 
@@ -77,23 +85,21 @@ export function X01GameScreen({
 
   return (
     <Screen title={title} onBack={onBack} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />}>
-      <ScrollView
-        horizontal={setup.players.length > 2}
-        showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0 }}
-        contentContainerStyle={styles.cards}
-      >
+      <View style={styles.cards}>
         {setup.players.map((pl, i) => {
           const active = i === p && !state.finished;
           return (
-            <View key={pl.id} style={[styles.card, active && styles.cardActive, setup.players.length > 2 && { width: 150 }]}>
+            <View
+              key={pl.id}
+              style={[styles.card, active && styles.cardActive, { width: cardWidth }, compact && styles.cardCompact]}
+            >
               <View style={styles.cardHead}>
-                <Text style={[styles.name, active && { color: colors.accent }]} numberOfLines={1}>
+                <Text style={[styles.name, compact && styles.nameCompact, active && { color: colors.accent }]} numberOfLines={1}>
                   {pl.name}
                 </Text>
                 {setup.legsToWin > 1 ? <Text style={styles.legs}>{state.legsWon[i]} legs</Text> : null}
               </View>
-              <Text style={styles.score}>{state.scores[i]}</Text>
+              <Text style={[styles.score, compact && styles.scoreCompact]}>{state.scores[i]}</Text>
               {isTeam(pl) ? (
                 <View style={styles.members}>
                   {pl.members!.map((m, mi) => {
@@ -110,7 +116,7 @@ export function X01GameScreen({
             </View>
           );
         })}
-      </ScrollView>
+      </View>
 
       <View style={styles.turn}>
         <View style={styles.turnDarts}>
@@ -197,9 +203,8 @@ function describeTurn(scored: number, bust: boolean, name: string): string {
 }
 
 const styles = StyleSheet.create({
-  cards: { flexDirection: 'row', gap: 8 },
+  cards: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   card: {
-    flex: 1,
     backgroundColor: colors.card,
     borderRadius: radius,
     padding: 12,
@@ -207,6 +212,9 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   cardActive: { backgroundColor: colors.cardActive, borderColor: colors.accent },
+  cardCompact: { padding: 8 },
+  nameCompact: { fontSize: 14 },
+  scoreCompact: { fontSize: 34, lineHeight: 40 },
   cardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   name: { color: colors.text, fontSize: 16, fontWeight: '700', flex: 1 },
   legs: { color: colors.muted, fontSize: 12, marginLeft: 6 },

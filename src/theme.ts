@@ -7,11 +7,12 @@ export const colors = {
   muted: '#94a3b8',
   accent: '#22c55e',
   accentText: '#052e16',
+  onActive: '#0b1220',
   danger: '#ef4444',
   warn: '#f59e0b',
   key: '#1e293b',
   keyPressed: '#334155',
-  double: '#dc2626',
+  double: '#38bdf8',
   triple: '#d97706',
 };
 
