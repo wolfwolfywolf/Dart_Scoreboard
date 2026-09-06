@@ -4,8 +4,9 @@ import type { Multiplier } from '../types';
 import { colors } from '../theme';
 
 /**
- * Per-dart entry. Tap a multiplier (Double/Treble) then a number; the multiplier
- * resets to Single after each dart. "25" is the outer bull, "Bull" the inner (50).
+ * Per-dart entry. Tap a multiplier (Double/Triple) then a number; the multiplier
+ * resets to Single after each dart. Bull follows the multiplier too: Single is
+ * the outer bull (25), Double is the bullseye (50).
  */
 export function DartKeypad({
   numbers,
@@ -25,9 +26,25 @@ export function DartKeypad({
     setMult(1);
   };
 
+  // Numbers, then Bull / Miss / Undo, flowing through one grid so there is no
+  // separate row of odd-looking controls.
   const columns = 5;
-  const rows: number[][] = [];
-  for (let i = 0; i < numbers.length; i += columns) rows.push(numbers.slice(i, i + columns));
+  const keys: React.ReactNode[] = numbers.map((n) => (
+    <Key key={n} label={mult === 1 ? String(n) : mult === 2 ? `D${n}` : `T${n}`} onPress={() => hit(n)} />
+  ));
+  keys.push(
+    <Key
+      key="bull"
+      label={mult === 3 ? 'Bull' : mult === 2 ? 'Bull 50' : 'Bull 25'}
+      onPress={() => hit(25, mult === 3 ? 2 : mult)}
+      disabled={mult === 3}
+      color={mult === 2 ? colors.double : undefined}
+    />,
+    <Key key="miss" label="Miss" onPress={() => hit(0, 1)} />,
+    <Key key="undo" label="Undo" onPress={onUndo} disabled={!canUndo} />,
+  );
+  const rows: React.ReactNode[][] = [];
+  for (let i = 0; i < keys.length; i += columns) rows.push(keys.slice(i, i + columns));
 
   return (
     <View style={styles.wrap}>
@@ -35,33 +52,21 @@ export function DartKeypad({
         {([1, 2, 3] as Multiplier[]).map((m) => (
           <Key
             key={m}
-            label={m === 1 ? 'Single' : m === 2 ? 'Double' : 'Treble'}
+            label={m === 1 ? 'Single' : m === 2 ? 'Double' : 'Triple'}
             onPress={() => setMult(m)}
             active={mult === m}
-            activeColor={m === 2 ? colors.double : m === 3 ? colors.treble : colors.accent}
+            activeColor={m === 2 ? colors.double : m === 3 ? colors.triple : colors.accent}
           />
         ))}
       </View>
       {rows.map((row, i) => (
         <View style={styles.row} key={i}>
-          {row.map((n) => (
-            <Key
-              key={n}
-              label={mult === 1 ? String(n) : mult === 2 ? `D${n}` : `T${n}`}
-              onPress={() => hit(n)}
-            />
-          ))}
+          {row}
           {row.length < columns
             ? Array.from({ length: columns - row.length }).map((_, j) => <View key={`s${j}`} style={styles.spacer} />)
             : null}
         </View>
       ))}
-      <View style={styles.row}>
-        <Key label="25" onPress={() => hit(25, 1)} />
-        <Key label="Bull" onPress={() => hit(25, 2)} color={colors.double} />
-        <Key label="Miss" onPress={() => hit(0, 1)} dim />
-        <Key label="Undo" onPress={onUndo} dim disabled={!canUndo} />
-      </View>
     </View>
   );
 }

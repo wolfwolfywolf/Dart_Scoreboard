@@ -10,7 +10,7 @@ React Native so one TypeScript codebase runs on both iOS and Android.
 - **Cricket**: 15–20 and bull, standard marks/points scoring, marks-per-round.
 - **Singles or doubles**: in doubles, two-person teams share a score and the
   teammates alternate throws. Stats are kept for the team and for each player.
-- **Two ways to enter scores** in x01: tap each dart (single/double/treble
+- **Two ways to enter scores** in x01: tap each dart (single/double/triple
   keypad) or type the three-dart total. Busts, double-out rules and checkout
   validation are handled for you.
 - **Checkout suggestions** whenever the player on the oche is on a finish.

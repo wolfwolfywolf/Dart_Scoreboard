@@ -12,7 +12,7 @@ export const colors = {
   key: '#1e293b',
   keyPressed: '#334155',
   double: '#dc2626',
-  treble: '#d97706',
+  triple: '#d97706',
 };
 
 export const radius = 14;
