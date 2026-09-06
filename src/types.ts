@@ -29,7 +29,9 @@ export type CricketScoring =
   /** Standard: hits on a number you've closed score points while an opponent still has it open. */
   | 'points'
   /** Race to close: extra hits do nothing, first side to close everything wins. */
-  | 'closeOnly';
+  | 'closeOnly'
+  /** Cut-throat: hits on a closed number give points to every opponent who still has it open; lowest score wins. */
+  | 'cutThroat';
 
 export interface CricketSetup {
   kind: 'cricket';

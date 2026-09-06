@@ -80,6 +80,7 @@ export function SetupScreen({
               options={[
                 { label: 'Points', value: 'points' as CricketScoring },
                 { label: 'No points', value: 'closeOnly' as CricketScoring },
+                { label: 'Cut-throat', value: 'cutThroat' as CricketScoring },
               ]}
               value={cricketScoring}
               onChange={setCricketScoring}
@@ -87,7 +88,9 @@ export function SetupScreen({
             <Text style={styles.hint}>
               {cricketScoring === 'points'
                 ? 'Once you have closed a number, further hits on it score points while an opponent still has it open. Close everything with the most points to win.'
-                : 'First to close every number wins. Extra hits on a closed number do nothing.'}
+                : cricketScoring === 'closeOnly'
+                  ? 'First to close every number wins. Extra hits on a closed number do nothing.'
+                  : 'Hits on a number you have closed give points to every opponent who still has it open. Close everything with the lowest score to win.'}
             </Text>
           </>
         ) : (

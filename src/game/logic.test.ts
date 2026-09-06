@@ -209,3 +209,20 @@ test('cricket without points: closing everything wins, extra hits score nothing'
   assert.equal(st.finished, true);
   assert.equal(st.winner, 0);
 });
+
+test('cut-throat cricket: points go to open opponents and the lowest score wins', () => {
+  const c = (v: number, m: 1 | 2 | 3 = 1): CricketEvent => ({ t: 'dart', v, m });
+  const three = [...players, { id: 'c', name: 'Cat' }];
+  const setup = { kind: 'cricket' as const, scoring: 'cutThroat' as const, players: three };
+  // Ann closes 20 then hits it again: Bob and Cat each take 20 points, Ann none.
+  let st = replayCricket(setup, [c(20, 3), c(20), c(0)]);
+  assert.deepEqual(st.points, [0, 20, 20]);
+  // Bob closes 20 with his turn; Cat misses; Ann hits 20 again: only Cat is still open, so only Cat is hit.
+  st = replayCricket(setup, [c(20, 3), c(20), c(0), c(20, 3), c(0), c(0), c(0), c(0), c(0), c(20), c(0), c(0)]);
+  assert.deepEqual(st.points, [0, 20, 40]);
+  // Ann closing everything wins only while her score is the lowest.
+  const closeRest: CricketEvent[] = [c(19, 3), c(18, 3), c(17, 3), c(0), c(0), c(0), c(0), c(0), c(0), c(16, 3), c(15, 3), c(25, 2), c(0), c(0), c(0), c(0), c(0), c(0), c(25)];
+  st = replayCricket(setup, [c(20, 3), c(20), c(0), c(0), c(0), c(0), c(0), c(0), c(0), ...closeRest]);
+  assert.equal(st.finished, true);
+  assert.equal(st.winner, 0);
+});

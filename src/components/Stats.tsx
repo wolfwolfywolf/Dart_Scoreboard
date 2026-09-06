@@ -60,7 +60,7 @@ export function X01StatsTable({ state }: { state: X01State }) {
 }
 
 export function CricketStatsTable({ state }: { state: CricketState }) {
-  const withPoints = (state.setup.scoring ?? 'points') === 'points';
+  const withPoints = (state.setup.scoring ?? 'points') !== 'closeOnly';
   const rows: Row[] = [];
   state.setup.players.forEach((p, i) => {
     const cells: (string | number)[] = [p.name + (state.winner === i ? ' 🏆' : ''), marksPerRound(state.stats[i]).toFixed(2), state.stats[i].dartsThrown];

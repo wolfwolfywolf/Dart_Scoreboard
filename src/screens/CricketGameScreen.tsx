@@ -32,7 +32,7 @@ export function CricketGameScreen({
 }) {
   const { setup } = game;
   const state = useMemo(() => replayCricket(setup, game.events), [setup, game.events]);
-  const withPoints = (setup.scoring ?? 'points') === 'points';
+  const withPoints = (setup.scoring ?? 'points') !== 'closeOnly';
   const p = state.currentPlayer;
 
   const confirmEnd = () =>

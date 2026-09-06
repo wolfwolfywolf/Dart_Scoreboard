@@ -51,7 +51,9 @@ export function HistoryScreen({
                 ? `${item.setup.startScore}${item.setup.legsToWin > 1 ? ` · first to ${item.setup.legsToWin}` : ''}`
                 : item.setup.scoring === 'closeOnly'
                   ? 'Cricket · no points'
-                  : 'Cricket';
+                  : item.setup.scoring === 'cutThroat'
+                    ? 'Cricket · cut-throat'
+                    : 'Cricket';
             return (
               <Pressable
                 onPress={() => onOpen(item)}
