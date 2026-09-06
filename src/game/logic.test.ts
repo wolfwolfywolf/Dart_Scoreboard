@@ -120,3 +120,58 @@ test('cricket: marks, points and winning', () => {
   assert.equal(st.finished, true);
   assert.equal(st.winner, 0);
 });
+
+test('x01 doubles: teammates alternate and share a score', () => {
+  const teams = [
+    { id: 't1', name: 'Ann & Bob', members: ['Ann', 'Bob'] },
+    { id: 't2', name: 'Cat & Dan', members: ['Cat', 'Dan'] },
+  ];
+  const setup: X01Setup = { kind: 'x01', startScore: 301, doubleOut: true, legsToWin: 2, players: teams };
+  let st = replayX01(setup, []);
+  assert.equal(st.thrower, 'Ann');
+  st = replayX01(setup, [{ t: 'total', total: 60 }]);
+  assert.equal(st.thrower, 'Cat');
+  st = replayX01(setup, [{ t: 'total', total: 60 }, { t: 'total', total: 45 }]);
+  assert.equal(st.thrower, 'Bob');
+  assert.deepEqual(st.scores, [241, 256]);
+  st = replayX01(setup, [{ t: 'total', total: 60 }, { t: 'total', total: 45 }, { t: 'total', total: 100 }]);
+  assert.equal(st.thrower, 'Dan');
+  assert.equal(st.scores[0], 141);
+  assert.equal(st.turns[2].thrower, 'Bob');
+  assert.equal(st.memberStats[0][0].pointsScored, 60);
+  assert.equal(st.memberStats[0][1].pointsScored, 100);
+  assert.equal(st.stats[0].pointsScored, 160);
+  // Ann wins leg 1 (141 = T20 T19 D12); leg 2 starts with team 2, and its
+  // alternation continues: Dan threw last for team 2, so Cat starts.
+  const legOne: X01Event[] = [
+    { t: 'total', total: 60 },
+    { t: 'total', total: 45 },
+    { t: 'total', total: 100 },
+    { t: 'total', total: 40 },
+    { t: 'total', total: 141, darts: 3 },
+  ];
+  st = replayX01(setup, legOne);
+  assert.equal(st.legsWon[0], 1);
+  assert.equal(st.currentPlayer, 1);
+  assert.equal(st.thrower, 'Cat');
+  assert.equal(st.turns[4].thrower, 'Ann');
+});
+
+test('cricket doubles: teammates alternate', () => {
+  const c = (v: number, m: 1 | 2 | 3 = 1): CricketEvent => ({ t: 'dart', v, m });
+  const setup = {
+    kind: 'cricket' as const,
+    players: [
+      { id: 't1', name: 'Ann & Bob', members: ['Ann', 'Bob'] },
+      { id: 't2', name: 'Cat', members: ['Cat'] },
+    ],
+  };
+  let st = replayCricket(setup, [c(20, 3), c(0), c(0)]);
+  assert.equal(st.thrower, 'Cat');
+  st = replayCricket(setup, [c(20, 3), c(0), c(0), c(0), c(0), c(0)]);
+  assert.equal(st.thrower, 'Bob');
+  assert.equal(st.memberStats[0][0].marks, 3);
+  st = replayCricket(setup, [c(20, 3), c(0), c(0), c(0), c(0), c(0), c(19, 2)]);
+  assert.equal(st.memberStats[0][1].marks, 2);
+  assert.equal(st.stats[0].marks, 5);
+});

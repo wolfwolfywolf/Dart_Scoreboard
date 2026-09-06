@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Dart Scorer",
-    "slug": "dart-scorer",
+    "name": "Dart Scoreboard",
+    "slug": "dart-scoreboard",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

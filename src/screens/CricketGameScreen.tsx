@@ -84,7 +84,7 @@ export function CricketGameScreen({
             </View>
           );
         })}
-        <Text style={styles.toThrow}>{setup.players[p].name} to throw</Text>
+        <Text style={styles.toThrow}>{state.thrower} to throw</Text>
       </View>
 
       <View style={styles.keypad}>

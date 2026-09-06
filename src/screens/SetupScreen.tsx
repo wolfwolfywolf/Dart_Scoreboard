@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { GameSetup, Player } from '../types';
-import { newId } from '../game/darts';
+import { isTeam, newId } from '../game/darts';
 import { Button, Chip, Label, Screen, Segmented } from '../components/ui';
 import { colors, radius } from '../theme';
 
@@ -23,27 +23,38 @@ export function SetupScreen({
   );
   const [doubleOut, setDoubleOut] = useState(initial?.kind === 'x01' ? initial.doubleOut : true);
   const [legsToWin, setLegsToWin] = useState(initial?.kind === 'x01' ? initial.legsToWin : 1);
-  const [players, setPlayers] = useState<Player[]>(initial?.players ?? []);
+  const [doubles, setDoubles] = useState(initial?.players.some(isTeam) ?? false);
+  // Individual people, in order. In doubles they are paired up: 1 & 2, 3 & 4, ...
+  const [people, setPeople] = useState<string[]>(
+    initial?.players.flatMap((p) => (p.members?.length ? p.members : [p.name])) ?? [],
+  );
   const [name, setName] = useState('');
+
+  const players: Player[] = doubles
+    ? Array.from({ length: Math.floor(people.length / 2) }, (_, i) => {
+        const members = people.slice(i * 2, i * 2 + 2);
+        return { id: `team${i}`, name: members.join(' & '), members };
+      })
+    : people.map((n, i) => ({ id: `p${i}`, name: n }));
+  const unpaired = doubles && people.length % 2 === 1 ? people[people.length - 1] : null;
 
   const addPlayer = (raw: string) => {
     const trimmed = raw.trim();
     if (!trimmed) return;
-    if (players.some((p) => p.name.toLowerCase() === trimmed.toLowerCase())) {
-      setName('');
-      return;
-    }
-    setPlayers([...players, { id: newId(), name: trimmed }]);
+    if (!people.some((n) => n.toLowerCase() === trimmed.toLowerCase())) setPeople([...people, trimmed]);
     setName('');
   };
 
+  const canStart = players.length > 0 && unpaired === null;
+
   const start = () => {
-    if (players.length === 0) return;
-    if (type === 'cricket') onStart({ kind: 'cricket', players });
-    else onStart({ kind: 'x01', startScore: type, doubleOut, legsToWin, players });
+    if (!canStart) return;
+    const withIds = players.map((p) => ({ ...p, id: newId() }));
+    if (type === 'cricket') onStart({ kind: 'cricket', players: withIds });
+    else onStart({ kind: 'x01', startScore: type, doubleOut, legsToWin, players: withIds });
   };
 
-  const suggestions = recentPlayers.filter((n) => !players.some((p) => p.name === n));
+  const suggestions = recentPlayers.filter((n) => !people.includes(n));
 
   return (
     <Screen title="New game" onBack={onBack} scroll>
@@ -79,14 +90,28 @@ export function SetupScreen({
           </>
         ) : null}
 
+        <Label>Format</Label>
+        <Segmented
+          options={[
+            { label: 'Singles', value: 'singles' },
+            { label: 'Doubles (teams of 2)', value: 'doubles' },
+          ]}
+          value={doubles ? 'doubles' : 'singles'}
+          onChange={(v) => setDoubles(v === 'doubles')}
+        />
+
         <Label>Players</Label>
-        {players.map((p, i) => (
-          <View key={p.id} style={styles.playerRow}>
-            <Text style={styles.playerIndex}>{i + 1}</Text>
-            <Text style={styles.playerName}>{p.name}</Text>
-            <Pressable onPress={() => setPlayers(players.filter((x) => x.id !== p.id))} hitSlop={10}>
-              <Text style={styles.remove}>✕</Text>
-            </Pressable>
+        {doubles ? <Text style={styles.hint}>Players are paired in the order added: 1 & 2 form Team 1, 3 & 4 form Team 2, and so on. Teammates alternate throws.</Text> : null}
+        {people.map((n, i) => (
+          <View key={`${n}-${i}`}>
+            {doubles && i % 2 === 0 ? <Text style={styles.teamHeading}>Team {i / 2 + 1}</Text> : null}
+            <View style={styles.playerRow}>
+              <Text style={styles.playerIndex}>{i + 1}</Text>
+              <Text style={styles.playerName}>{n}</Text>
+              <Pressable onPress={() => setPeople(people.filter((_, j) => j !== i))} hitSlop={10}>
+                <Text style={styles.remove}>✕</Text>
+              </Pressable>
+            </View>
           </View>
         ))}
         <View style={styles.addRow}>
@@ -110,9 +135,10 @@ export function SetupScreen({
             ))}
           </View>
         ) : null}
-        {players.length === 0 ? <Text style={styles.hint}>Add at least one player to start.</Text> : null}
+        {people.length === 0 ? <Text style={styles.hint}>Add at least one player to start.</Text> : null}
+        {unpaired ? <Text style={styles.hint}>{unpaired} needs a teammate. Add one more player or remove them.</Text> : null}
         <View style={{ height: 24 }} />
-        <Button title="Start game" onPress={start} disabled={players.length === 0} />
+        <Button title="Start game" onPress={start} disabled={!canStart} />
       </ScrollView>
     </Screen>
   );
@@ -146,5 +172,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
-  hint: { color: colors.muted, marginTop: 12 },
+  hint: { color: colors.muted, marginTop: 12, marginBottom: 8, lineHeight: 20 },
+  teamHeading: { color: colors.accent, fontSize: 13, fontWeight: '700', marginTop: 6, marginBottom: 4 },
 });

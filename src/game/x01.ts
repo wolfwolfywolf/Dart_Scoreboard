@@ -1,6 +1,6 @@
 import type { Dart, X01Event, X01Setup } from '../types';
 import { findCheckout } from './checkout';
-import { dartValue } from './darts';
+import { dartValue, throwerName } from './darts';
 
 export interface X01PlayerStats {
   dartsThrown: number;
@@ -13,8 +13,16 @@ export interface X01PlayerStats {
   legsWon: number;
 }
 
+export interface MemberStats {
+  dartsThrown: number;
+  pointsScored: number;
+}
+
 export interface X01Turn {
   player: number;
+  /** Which teammate threw (index into players[player].members), 0 for singles. */
+  member: number;
+  thrower: string;
   leg: number;
   darts: Dart[]; // empty when entered as a total
   scored: number;
@@ -34,6 +42,12 @@ export interface X01State {
   finished: boolean;
   winner: number | null;
   stats: X01PlayerStats[];
+  /** Per-teammate stats, memberStats[side][member]. One entry per side in singles. */
+  memberStats: MemberStats[][];
+  /** Turns each side has completed in the whole game; decides which teammate throws next. */
+  sideTurns: number[];
+  /** Name of whoever is throwing right now. */
+  thrower: string;
   turns: X01Turn[];
 }
 
@@ -50,7 +64,7 @@ function emptyStats(): X01PlayerStats {
   };
 }
 
-export function threeDartAverage(s: X01PlayerStats): number {
+export function threeDartAverage(s: { dartsThrown: number; pointsScored: number }): number {
   return s.dartsThrown === 0 ? 0 : (s.pointsScored / s.dartsThrown) * 3;
 }
 
@@ -68,9 +82,18 @@ export function replayX01(setup: X01Setup, events: X01Event[]): X01State {
     finished: false,
     winner: null,
     stats: Array.from({ length: n }, emptyStats),
+    memberStats: setup.players.map((pl) =>
+      Array.from({ length: Math.max(1, pl.members?.length ?? 1) }, () => ({ dartsThrown: 0, pointsScored: 0 })),
+    ),
+    sideTurns: Array(n).fill(0),
+    thrower: throwerName(setup.players[0], 0),
     turns: [],
   };
   let legDarts: number[] = Array(n).fill(0);
+  const memberOf = (p: number) => st.sideTurns[p] % st.memberStats[p].length;
+  const syncThrower = () => {
+    st.thrower = throwerName(setup.players[st.currentPlayer], st.sideTurns[st.currentPlayer]);
+  };
 
   const startLeg = (leg: number) => {
     st.leg = leg;
@@ -79,21 +102,36 @@ export function replayX01(setup: X01Setup, events: X01Event[]): X01State {
     st.currentPlayer = leg % n;
     st.turnDarts = [];
     st.turnStartScore = setup.startScore;
+    syncThrower();
   };
 
   const recordTurn = (p: number, scored: number, bust: boolean, finished: boolean, darts: Dart[]) => {
     const s = st.stats[p];
+    const m = memberOf(p);
     s.pointsScored += scored;
+    st.memberStats[p][m].pointsScored += scored;
     if (scored >= 100) s.tons++;
     if (scored >= 140) s.ton40s++;
     if (scored === 180) s.oneEighties++;
-    st.turns.push({ player: p, leg: st.leg, darts, scored, startScore: st.turnStartScore, bust, finished });
+    st.turns.push({
+      player: p,
+      member: m,
+      thrower: throwerName(setup.players[p], st.sideTurns[p]),
+      leg: st.leg,
+      darts,
+      scored,
+      startScore: st.turnStartScore,
+      bust,
+      finished,
+    });
+    st.sideTurns[p]++;
   };
 
   const nextTurn = () => {
     st.turnDarts = [];
     st.currentPlayer = (st.currentPlayer + 1) % n;
     st.turnStartScore = st.scores[st.currentPlayer];
+    syncThrower();
   };
 
   const winLeg = (p: number, darts: Dart[]) => {
@@ -123,6 +161,7 @@ export function replayX01(setup: X01Setup, events: X01Event[]): X01State {
       const newScore = st.scores[p] - value;
       st.turnDarts.push(dart);
       s.dartsThrown++;
+      st.memberStats[p][memberOf(p)].dartsThrown++;
       legDarts[p]++;
       const bust =
         newScore < 0 ||
@@ -149,6 +188,7 @@ export function replayX01(setup: X01Setup, events: X01Event[]): X01State {
       let used = dartsLeft;
       if (canFinish && ev.darts) used = Math.min(Math.max(ev.darts, 1), dartsLeft);
       s.dartsThrown += used;
+      st.memberStats[p][memberOf(p)].dartsThrown += used;
       legDarts[p] += used;
       if (bust) {
         st.scores[p] = st.turnStartScore;

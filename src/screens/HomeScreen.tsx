@@ -25,7 +25,7 @@ export function HomeScreen({
     <Screen title="">
       <View style={styles.hero}>
         <Text style={styles.logo}>🎯</Text>
-        <Text style={styles.title}>Dart Scorer</Text>
+        <Text style={styles.title}>Dart Scoreboard</Text>
         <Text style={styles.subtitle}>501 · 301 · 701 · Cricket</Text>
       </View>
       <View style={styles.actions}>

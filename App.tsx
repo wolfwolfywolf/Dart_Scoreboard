@@ -85,7 +85,8 @@ export default function App() {
         : { id: newId(), startedAt: Date.now(), setup, events: [] };
     setGame(g);
     saveCurrentGame(g);
-    const names = [...setup.players.map((p) => p.name), ...recentPlayers.filter((n) => !setup.players.some((p) => p.name === n))];
+    const people = setup.players.flatMap((p) => (p.members?.length ? p.members : [p.name]));
+    const names = [...people, ...recentPlayers.filter((n) => !people.includes(n))];
     setRecentPlayers(names.slice(0, 12));
     saveRecentPlayers(names);
     setRoute({ name: 'game' });

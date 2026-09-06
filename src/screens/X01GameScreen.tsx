@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Alert, Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Multiplier, X01Event, X01Game } from '../types';
 import { findCheckout, formatRoute } from '../game/checkout';
-import { dartLabel } from '../game/darts';
+import { dartLabel, isTeam } from '../game/darts';
 import { possibleFinishDartCounts, replayX01, threeDartAverage } from '../game/x01';
 import { DartKeypad } from '../components/DartKeypad';
 import { TotalKeypad } from '../components/TotalKeypad';
@@ -94,6 +94,18 @@ export function X01GameScreen({
                 {setup.legsToWin > 1 ? <Text style={styles.legs}>{state.legsWon[i]} legs</Text> : null}
               </View>
               <Text style={styles.score}>{state.scores[i]}</Text>
+              {isTeam(pl) ? (
+                <View style={styles.members}>
+                  {pl.members!.map((m, mi) => {
+                    const up = active && mi === state.sideTurns[i] % pl.members!.length;
+                    return (
+                      <Text key={mi} style={[styles.member, up && styles.memberUp]} numberOfLines={1}>
+                        {up ? '▶ ' : ''}{m}
+                      </Text>
+                    );
+                  })}
+                </View>
+              ) : null}
               <Text style={styles.avg}>avg {threeDartAverage(state.stats[i]).toFixed(1)}</Text>
             </View>
           );
@@ -113,7 +125,7 @@ export function X01GameScreen({
           <Text style={styles.turnSum}>{state.turnStartScore - remaining}</Text>
         </View>
         <Text style={styles.info} numberOfLines={1}>
-          {checkout ? `Checkout: ${formatRoute(checkout)}` : lastTurn ? describeTurn(lastTurn.player, lastTurn.scored, lastTurn.bust, setup.players[lastTurn.player].name) : `${setup.players[p].name} to throw`}
+          {checkout ? `Checkout: ${formatRoute(checkout)}` : lastTurn ? describeTurn(lastTurn.scored, lastTurn.bust, lastTurn.thrower) : `${state.thrower} to throw`}
         </Text>
       </View>
 
@@ -179,7 +191,7 @@ export function X01GameScreen({
   );
 }
 
-function describeTurn(_player: number, scored: number, bust: boolean, name: string): string {
+function describeTurn(scored: number, bust: boolean, name: string): string {
   if (bust) return `${name}: bust`;
   return `${name} scored ${scored}`;
 }
@@ -200,6 +212,9 @@ const styles = StyleSheet.create({
   legs: { color: colors.muted, fontSize: 12, marginLeft: 6 },
   score: { color: colors.text, fontSize: 48, fontWeight: '800', fontVariant: ['tabular-nums'], lineHeight: 54 },
   avg: { color: colors.muted, fontSize: 13 },
+  members: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 2 },
+  member: { color: colors.muted, fontSize: 13 },
+  memberUp: { color: colors.accent, fontWeight: '700' },
   turn: { marginTop: 10, gap: 6 },
   turnDarts: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   dartSlot: {

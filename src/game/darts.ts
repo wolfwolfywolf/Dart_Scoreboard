@@ -1,4 +1,4 @@
-import type { Dart, Multiplier } from '../types';
+import type { Dart, Multiplier, Player } from '../types';
 
 export function dartValue(d: Dart): number {
   if (d.v === 0) return 0;
@@ -22,4 +22,14 @@ export function dartLabel(d: Dart): string {
 
 export function newId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+/** Name of whoever throws for `side` on its `turnIndex`-th turn (0-based). */
+export function throwerName(side: Player, turnIndex: number): string {
+  if (!side.members || side.members.length === 0) return side.name;
+  return side.members[turnIndex % side.members.length];
+}
+
+export function isTeam(side: Player): boolean {
+  return !!side.members && side.members.length > 1;
 }

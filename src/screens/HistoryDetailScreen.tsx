@@ -19,7 +19,7 @@ export function HistoryDetailScreen({ game, onBack }: { game: Game; onBack: () =
         table: <X01StatsTable state={st} />,
         turns: st.turns.map((t, i) => ({
           key: String(i),
-          left: `${legs > 1 ? `L${t.leg + 1} · ` : ''}${game.setup.players[t.player].name}`,
+          left: `${legs > 1 ? `L${t.leg + 1} · ` : ''}${t.thrower}`,
           middle: t.darts.length ? t.darts.map(dartLabel).join('  ') : 'total',
           right: t.bust ? 'BUST' : t.finished ? `${t.scored} ✓` : String(t.scored),
           highlight: t.finished,
@@ -33,7 +33,7 @@ export function HistoryDetailScreen({ game, onBack }: { game: Game; onBack: () =
       table: <CricketStatsTable state={st} />,
       turns: st.turns.map((t, i) => ({
         key: String(i),
-        left: game.setup.players[t.player].name,
+        left: t.thrower,
         middle: t.darts.map(dartLabel).join('  '),
         right: `${t.marksScored} marks${t.pointsScored ? ` · +${t.pointsScored}` : ''}`,
         highlight: false,

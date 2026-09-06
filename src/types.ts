@@ -6,9 +6,15 @@ export interface Dart {
   m: Multiplier;
 }
 
+/**
+ * A scoring side. In singles this is one person. In doubles it is a team:
+ * `name` is the team label and `members` lists the two teammates, who
+ * alternate throws.
+ */
 export interface Player {
   id: string;
   name: string;
+  members?: string[];
 }
 
 export interface X01Setup {

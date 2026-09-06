@@ -1,4 +1,4 @@
-# Dart Scorer
+# Dart Scoreboard
 
 A phone app for keeping dart scores, built with [Expo](https://expo.dev) /
 React Native so one TypeScript codebase runs on both iOS and Android.
@@ -8,6 +8,8 @@ React Native so one TypeScript codebase runs on both iOS and Android.
 - **x01 games**: 301, 501 and 701, with double-out or straight-out finishes
   and "first to N legs" matches.
 - **Cricket**: 15–20 and bull, standard marks/points scoring, marks-per-round.
+- **Singles or doubles**: in doubles, two-person teams share a score and the
+  teammates alternate throws. Stats are kept for the team and for each player.
 - **Two ways to enter scores** in x01: tap each dart (single/double/treble
   keypad) or type the three-dart total. Busts, double-out rules and checkout
   validation are handled for you.
