@@ -26,6 +26,7 @@ export function HomeScreen({
       <View style={styles.hero}>
         <Text style={styles.logo}>🎯</Text>
         <Text style={styles.title}>Dart Scoreboard</Text>
+        <Text style={styles.credit}>Created by WolfysPub.com</Text>
         <Text style={styles.subtitle}>501 · 301 · 701 · Cricket</Text>
       </View>
       <View style={styles.actions}>
@@ -46,6 +47,7 @@ const styles = StyleSheet.create({
   hero: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   logo: { fontSize: 72 },
   title: { color: colors.text, fontSize: 40, fontFamily: fonts.chalk, marginTop: 12 },
+  credit: { color: colors.muted, fontSize: 16, marginTop: 8 },
   subtitle: { color: colors.muted, fontSize: 16, marginTop: 6 },
   actions: { gap: 12, paddingBottom: 12 },
   resumeHint: { color: colors.muted, textAlign: 'center', marginTop: 6, fontSize: 14 },
