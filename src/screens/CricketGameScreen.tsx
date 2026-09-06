@@ -42,11 +42,16 @@ export function CricketGameScreen({
 
   const { width, height, isWide, twoPane } = useLayout();
   const keypadPaneWidth = Math.min(460, Math.max(360, width * 0.45));
-  const keyHeight = keyHeightFor(height - (twoPane ? 130 : 420), 3, 38, isWide ? 72 : 60);
+  // Side by side: four keypad rows (multiplier + three of keys) centred beside a board
+  // that stretches to fill the column. Stacked: the board keeps its natural height.
+  const keyHeight = twoPane ? keyHeightFor(height - 150, 4, 38, 96) : keyHeightFor(height - 430, 4, 38, isWide ? 72 : 60);
+  const tall = twoPane;
+  const boardRowHeight = tall ? Math.max(30, (height - 200) / 8) : undefined;
+  const markSize = tall ? Math.min(34, Math.max(20, boardRowHeight! * 0.55)) : 20;
 
   const board = (
     <View style={twoPane ? styles.paneLeft : undefined}>
-      <View style={styles.board}>
+      <View style={[styles.board, tall && styles.boardTall]}>
         <View style={styles.row}>
           <View style={styles.numberCell} />
           {setup.players.map((pl, i) => (
@@ -62,15 +67,15 @@ export function CricketGameScreen({
         {CRICKET_NUMBERS.map((n, idx) => {
           const dead = state.marks.every((row) => row[idx] >= 3);
           return (
-            <View key={n} style={styles.row}>
-              <View style={styles.numberCell}>
-                <Text style={[styles.number, dead && { color: colors.muted, textDecorationLine: 'line-through' }]}>
+            <View key={n} style={[styles.row, tall && { flex: 1, alignItems: 'stretch' }]}>
+              <View style={[styles.numberCell, tall && { justifyContent: 'center' }]}>
+                <Text style={[styles.number, tall && { fontSize: markSize }, dead && { color: colors.muted, textDecorationLine: 'line-through' }]}>
                   {n === 25 ? 'Bull' : n}
                 </Text>
               </View>
               {setup.players.map((pl, i) => (
-                <View key={pl.id} style={[styles.markCell, i === p && !state.finished && styles.activeCol]}>
-                  <Text style={[styles.mark, state.marks[i][idx] >= 3 && { color: colors.accent }]}>
+                <View key={pl.id} style={[styles.markCell, tall && styles.cellTall, i === p && !state.finished && styles.activeCol]}>
+                  <Text style={[styles.mark, tall && { fontSize: markSize + 4, minHeight: 0 }, state.marks[i][idx] >= 3 && { color: colors.accent }]}>
                     {MARK_GLYPH[Math.min(state.marks[i][idx], 3)]}
                   </Text>
                 </View>
@@ -95,7 +100,7 @@ export function CricketGameScreen({
   );
 
   const keypad = (
-    <View style={twoPane ? [styles.paneRight, { width: keypadPaneWidth }] : styles.keypad}>
+    <View style={twoPane ? [styles.paneRight, { width: keypadPaneWidth, justifyContent: 'center' }] : styles.keypad}>
       <DartKeypad
         numbers={[20, 19, 18, 17, 16, 15]}
         onDart={onDart}
@@ -139,6 +144,7 @@ export function CricketGameScreen({
 
 const styles = StyleSheet.create({
   board: { backgroundColor: colors.card, borderRadius: radius, padding: 6 },
+  boardTall: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center' },
   numberCell: { width: 56, alignItems: 'center', paddingVertical: 4 },
   number: { color: colors.text, fontSize: 18, fontWeight: '800' },
@@ -147,6 +153,7 @@ const styles = StyleSheet.create({
   points: { color: colors.text, fontSize: 24, fontWeight: '800', fontVariant: ['tabular-nums'] },
   mpr: { color: colors.muted, fontSize: 11 },
   markCell: { flex: 1, alignItems: 'center', paddingVertical: 4 },
+  cellTall: { justifyContent: 'center', alignSelf: 'stretch' },
   activeCol: { backgroundColor: colors.cardActive },
   mark: { color: colors.text, fontSize: 20, fontWeight: '800', minHeight: 26 },
   turnDarts: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
@@ -164,7 +171,7 @@ const styles = StyleSheet.create({
   toThrow: { color: colors.accent, fontWeight: '600', marginLeft: 'auto', fontSize: 15 },
   keypad: { flex: 1, justifyContent: 'flex-end' },
   panes: { flex: 1, flexDirection: 'row', gap: spacing },
-  paneLeft: { flex: 1 },
+  paneLeft: { flex: 1, alignSelf: 'stretch' },
   paneRight: { justifyContent: 'flex-end' },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
   sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 8 },

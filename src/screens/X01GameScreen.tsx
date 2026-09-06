@@ -60,9 +60,13 @@ export function X01GameScreen({
   const cardWidth = (scoreboardWidth - cardGap * (columns - 1)) / columns;
 
   // Keypad keys grow on big screens and shrink so everything still fits on small ones.
+  // "Reserved" is everything on screen that isn't keypad: header, safe areas, the
+  // scoreboard cards, the turn strip and the mode row.
   const keypadRows = mode === 'dart' ? 6 : 7;
-  const reserved = twoPane ? 190 : 200 + (n >= 4 ? 2 : 1) * (compact ? 96 : big ? 150 : 120);
-  const keyHeight = keyHeightFor(height - reserved, keypadRows, 38, isWide ? 72 : 60);
+  const cardRows = n >= 4 ? Math.ceil(n / 2) : 1;
+  const cardHeight = compact ? 96 : big ? 150 : 120;
+  const reserved = twoPane ? 150 : 270 + cardRows * cardHeight;
+  const keyHeight = keyHeightFor(height - reserved, keypadRows, 34, isWide ? 72 : 60);
 
   const onDart = (v: number, m: Multiplier) => onEvent({ t: 'dart', v, m });
 
@@ -157,20 +161,28 @@ export function X01GameScreen({
 
   const entry = (
     <View style={twoPane ? [styles.paneRight, { width: keypadPaneWidth }] : styles.entryStacked}>
-      <View style={styles.modeRow}>
-        <Segmented
-          options={[
-            { label: 'Per dart', value: 'dart' },
-            { label: 'Turn total', value: 'total' },
-          ]}
-          value={mode}
-          onChange={(m) => {
-            setMode(m);
-            setError(null);
-          }}
-        />
+      <View style={[styles.modeRow, twoPane && styles.modeRowInline]}>
+        <View style={twoPane ? { flex: 1 } : undefined}>
+          <Segmented
+            options={[
+              { label: 'Per dart', value: 'dart' },
+              { label: 'Turn total', value: 'total' },
+            ]}
+            value={mode}
+            onChange={(m) => {
+              setMode(m);
+              setError(null);
+            }}
+          />
+        </View>
         {setup.doubleOut ? (
-          <Button title="Double out chart" variant="secondary" small onPress={() => setShowChart(true)} style={styles.chartButton} />
+          <Button
+            title={twoPane ? 'Outs chart' : 'Double out chart'}
+            variant="secondary"
+            small
+            onPress={() => setShowChart(true)}
+            style={[styles.chartButton, twoPane && styles.chartButtonInline]}
+          />
         ) : null}
       </View>
 
@@ -285,7 +297,9 @@ const styles = StyleSheet.create({
   turnSum: { color: colors.muted, fontSize: 22, fontWeight: '800', marginLeft: 'auto', fontVariant: ['tabular-nums'] },
   info: { color: colors.accent, fontSize: 16, fontWeight: '600', minHeight: 20 },
   modeRow: { marginVertical: 8, gap: 8 },
+  modeRowInline: { flexDirection: 'row', alignItems: 'stretch', marginTop: 0 },
   chartButton: { paddingVertical: 8 },
+  chartButtonInline: { paddingVertical: 0, justifyContent: 'center' },
   keypad: { flex: 1, justifyContent: 'flex-end', flexGrow: 1 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
   sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 8 },
