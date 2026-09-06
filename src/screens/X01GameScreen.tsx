@@ -110,7 +110,9 @@ export function X01GameScreen({
   const title = `${setup.startScore}${setup.legsToWin > 1 ? ` · Leg ${state.leg + 1}` : ''}`;
 
   if (showChart) {
-    return <CheckoutChartScreen highlight={state.finished ? null : remaining} onClose={() => setShowChart(false)} />;
+    return (
+      <CheckoutChartScreen highlight={state.finished ? null : remaining} dartsLeft={dartsLeft} onClose={() => setShowChart(false)} />
+    );
   }
 
   const scoreboard = (
@@ -168,7 +170,7 @@ export function X01GameScreen({
           <Text style={styles.turnSum}>{state.turnStartScore - remaining}</Text>
         </View>
         <Text style={styles.info} numberOfLines={1}>
-          {checkout ? `Checkout: ${formatRoute(checkout)}` : lastTurn ? describeTurn(lastTurn.scored, lastTurn.bust, lastTurn.thrower) : `${state.thrower} to throw`}
+          {lastTurn ? describeTurn(lastTurn.scored, lastTurn.bust, lastTurn.thrower) : `${state.thrower} to throw`}
         </Text>
       </View>
     </View>
@@ -176,28 +178,39 @@ export function X01GameScreen({
 
   const entry = (
     <View style={twoPane ? [styles.paneRight, { width: keypadPaneWidth }] : styles.entryStacked}>
-      <View style={[styles.modeRow, twoPane && styles.modeRowInline]} onLayout={(e) => setModeRowH(e.nativeEvent.layout.height)}>
-        <View style={twoPane ? { flex: 1 } : undefined}>
-          <Segmented
-            options={[
-              { label: 'Per dart', value: 'dart' },
-              { label: 'Turn total', value: 'total' },
-            ]}
-            value={mode}
-            onChange={(m) => {
-              setMode(m);
-              setError(null);
-            }}
-          />
+      <View style={styles.modeRow} onLayout={(e) => setModeRowH(e.nativeEvent.layout.height)}>
+        <View style={twoPane ? styles.modeRowInline : styles.modeRowStacked}>
+          <View style={twoPane ? { flex: 1 } : undefined}>
+            <Segmented
+              options={[
+                { label: 'Per dart', value: 'dart' },
+                { label: 'Turn total', value: 'total' },
+              ]}
+              value={mode}
+              onChange={(m) => {
+                setMode(m);
+                setError(null);
+              }}
+            />
+          </View>
+          {setup.doubleOut ? (
+            <Button
+              title={twoPane ? 'Outs chart' : 'Double out chart'}
+              variant="secondary"
+              small
+              onPress={() => setShowChart(true)}
+              style={[styles.chartButton, twoPane && styles.chartButtonInline]}
+            />
+          ) : null}
         </View>
-        {setup.doubleOut ? (
-          <Button
-            title={twoPane ? 'Outs chart' : 'Double out chart'}
-            variant="secondary"
-            small
-            onPress={() => setShowChart(true)}
-            style={[styles.chartButton, twoPane && styles.chartButtonInline]}
-          />
+        {!state.finished && remaining <= 170 ? (
+          <Text style={[styles.checkoutLine, !checkout && styles.checkoutNone]} numberOfLines={1}>
+            {checkout
+              ? `${remaining} out: ${formatRoute(checkout)}`
+              : dartsLeft < 3 && findCheckout(remaining, 3, setup.doubleOut)
+                ? `No out for ${remaining} with ${dartsLeft} dart${dartsLeft === 1 ? '' : 's'} left`
+                : `No out for ${remaining}`}
+          </Text>
         ) : null}
       </View>
 
@@ -312,10 +325,13 @@ const styles = StyleSheet.create({
   dartText: { color: colors.text, fontSize: 18, fontWeight: '700' },
   turnSum: { color: colors.muted, fontSize: 22, fontWeight: '800', marginLeft: 'auto', fontVariant: ['tabular-nums'] },
   info: { color: colors.accent, fontSize: 16, fontWeight: '600', minHeight: 20 },
-  modeRow: { marginVertical: 8, gap: 8 },
-  modeRowInline: { flexDirection: 'row', alignItems: 'stretch', marginTop: 0 },
+  modeRow: { marginVertical: 8, gap: 6 },
+  modeRowStacked: { gap: 8 },
+  modeRowInline: { flexDirection: 'row', alignItems: 'stretch', gap: 8 },
   chartButton: { paddingVertical: 8 },
   chartButtonInline: { paddingVertical: 0, justifyContent: 'center' },
+  checkoutLine: { color: colors.accent, fontSize: 17, fontWeight: '700', textAlign: 'center', paddingVertical: 2 },
+  checkoutNone: { color: colors.muted, fontWeight: '500' },
   keypad: { flex: 1, justifyContent: 'flex-end', flexGrow: 1 },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
   sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 8 },

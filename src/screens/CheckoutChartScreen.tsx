@@ -1,29 +1,53 @@
 import React, { useMemo } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { CHART_MAX, CHECKOUT_CHART } from '../game/checkoutChart';
+import { findCheckout, formatRoute } from '../game/checkout';
 import { Button, Screen } from '../components/ui';
 import { useLayout } from '../layout';
 import { colors, radius } from '../theme';
 
-/** The standard double-out chart, 170 down to 2, with the current score highlighted. */
-export function CheckoutChartScreen({ highlight, onClose }: { highlight: number | null; onClose: () => void }) {
+/**
+ * The standard double-out chart, highest to lowest, with the current score highlighted.
+ * Only finishable scores are listed, and nothing above what the thrower still needs.
+ */
+export function CheckoutChartScreen({
+  highlight,
+  dartsLeft = 3,
+  onClose,
+}: {
+  highlight: number | null;
+  dartsLeft?: number;
+  onClose: () => void;
+}) {
+  const top = highlight !== null && highlight >= 2 && highlight <= CHART_MAX ? highlight : CHART_MAX;
   const rows = useMemo(() => {
-    const out: { score: number; route: string | null }[] = [];
-    for (let n = CHART_MAX; n >= 2; n--) out.push({ score: n, route: CHECKOUT_CHART[n] ?? null });
+    const out: { score: number; route: string }[] = [];
+    for (let n = top; n >= 2; n--) {
+      const route = CHECKOUT_CHART[n];
+      if (route) out.push({ score: n, route });
+    }
     return out;
-  }, []);
+  }, [top]);
 
+  // As many columns as fit comfortably: each entry needs roughly 165 points of width.
   const { width } = useLayout();
-  const numColumns = width >= 1000 ? 4 : width >= 700 ? 3 : 2;
+  const numColumns = Math.max(2, Math.floor((width - 24) / 165));
 
-  const yours = highlight !== null && highlight >= 2 && highlight <= CHART_MAX ? CHECKOUT_CHART[highlight] ?? null : null;
+  // The banner respects how many darts are left in the turn; the list is always the full-turn chart.
+  const yoursRoute = highlight !== null ? findCheckout(highlight, dartsLeft, true) : null;
+  const yours = yoursRoute ? formatRoute(yoursRoute) : null;
 
   return (
     <Screen title="Double out chart" right={<Button title="Close" variant="ghost" small onPress={onClose} />} fullWidth>
       {highlight !== null && highlight > 1 ? (
         <View style={styles.yours}>
-          <Text style={styles.yoursLabel}>You need {highlight}</Text>
-          <Text style={styles.yoursRoute}>{yours ?? (highlight > CHART_MAX ? 'Not on the chart yet' : 'No three-dart finish')}</Text>
+          <Text style={styles.yoursLabel}>
+            You need {highlight}
+            {dartsLeft < 3 ? ` · ${dartsLeft} dart${dartsLeft === 1 ? '' : 's'} left` : ''}
+          </Text>
+          <Text style={styles.yoursRoute}>
+            {yours ?? (highlight > CHART_MAX ? 'Not on the chart yet' : dartsLeft < 3 ? 'No out this turn' : 'No three-dart finish')}
+          </Text>
         </View>
       ) : null}
       <FlatList
@@ -36,10 +60,10 @@ export function CheckoutChartScreen({ highlight, onClose }: { highlight: number 
         renderItem={({ item }) => {
           const isYours = item.score === highlight;
           return (
-            <View style={[styles.row, isYours && styles.rowYours, !item.route && styles.rowBogey]}>
+            <View style={[styles.row, isYours && styles.rowYours]}>
               <Text style={[styles.score, isYours && { color: colors.accentText }]}>{item.score}</Text>
-              <Text style={[styles.route, isYours && { color: colors.accentText }, !item.route && { color: colors.muted }]} numberOfLines={1}>
-                {item.route ?? 'no out'}
+              <Text style={[styles.route, isYours && { color: colors.accentText }]} numberOfLines={1}>
+                {item.route}
               </Text>
             </View>
           );
@@ -75,7 +99,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   rowYours: { backgroundColor: colors.accent },
-  rowBogey: { opacity: 0.5 },
   score: { color: colors.muted, fontWeight: '800', width: 34, fontSize: 15, fontVariant: ['tabular-nums'] },
   route: { color: colors.text, fontWeight: '600', fontSize: 15, flex: 1 },
 });
