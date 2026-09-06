@@ -59,7 +59,7 @@ export function CricketGameScreen({
 
   const board = (
     <View style={twoPane ? styles.paneLeft : undefined} onLayout={(e) => setBoardH(e.nativeEvent.layout.height)}>
-      <Chalkboard style={tall ? styles.boardTall : undefined}>
+      <Chalkboard fill={tall}>
       <View style={[styles.board, tall && styles.boardTall]}>
         <View style={styles.row}>
           <View style={styles.numberCell} />
