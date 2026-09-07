@@ -124,6 +124,7 @@ export function CricketGameScreen({
         onUndo={onUndo}
         canUndo={game.events.length > 0}
         keyHeight={keyHeight}
+        onEndTurn={() => onEvent({ t: 'endTurn' })}
       />
     </View>
   );

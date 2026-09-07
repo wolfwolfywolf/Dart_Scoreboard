@@ -47,7 +47,10 @@ export type X01Event =
   /** A whole turn entered as a total. `darts` is how many darts were used (matters on a checkout). */
   | { t: 'total'; total: number; darts?: number };
 
-export type CricketEvent = { t: 'dart'; v: number; m: Multiplier };
+export type CricketEvent =
+  | { t: 'dart'; v: number; m: Multiplier }
+  /** Finish the turn early: any darts not entered count as misses. */
+  | { t: 'endTurn' };
 
 interface GameBase {
   id: string;

@@ -14,12 +14,15 @@ export function DartKeypad({
   onUndo,
   canUndo,
   keyHeight,
+  onEndTurn,
 }: {
   numbers: number[];
   onDart: (v: number, m: Multiplier) => void;
   onUndo: () => void;
   canUndo: boolean;
   keyHeight?: number;
+  /** When given, a green ✓ key ends the turn early (remaining darts count as misses). */
+  onEndTurn?: () => void;
 }) {
   const [mult, setMult] = useState<Multiplier>(1);
 
@@ -45,6 +48,9 @@ export function DartKeypad({
     <Key key="miss" label="Miss" onPress={() => hit(0, 1)} height={keyHeight} />,
     <Key key="undo" label="Undo" onPress={onUndo} disabled={!canUndo} height={keyHeight} />,
   );
+  if (onEndTurn) {
+    keys.push(<Key key="done" label="✓" onPress={onEndTurn} height={keyHeight} color={colors.accent} textColor={colors.onActive} />);
+  }
   const rows: React.ReactNode[][] = [];
   for (let i = 0; i < keys.length; i += columns) rows.push(keys.slice(i, i + columns));
 
@@ -85,6 +91,7 @@ export function Key({
   flex = 1,
   big,
   height,
+  textColor,
 }: {
   label: string;
   onPress: () => void;
@@ -97,6 +104,7 @@ export function Key({
   big?: boolean;
   /** Fixed key height; when set it replaces the default padding-based height. */
   height?: number;
+  textColor?: string;
 }) {
   return (
     <Pressable
@@ -114,7 +122,9 @@ export function Key({
         disabled && { opacity: 0.35 },
       ]}
     >
-      <Text style={[styles.keyText, active && { color: colors.onActive }, dim && { color: colors.muted }]}>{label}</Text>
+      <Text style={[styles.keyText, active && { color: colors.onActive }, dim && { color: colors.muted }, textColor ? { color: textColor } : null]}>
+        {label}
+      </Text>
     </Pressable>
   );
 }

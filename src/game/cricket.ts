@@ -88,6 +88,18 @@ export function replayCricket(setup: CricketSetup, events: CricketEvent[]): Cric
   for (const ev of events) {
     if (st.finished) break;
     const p = st.currentPlayer;
+
+    if (ev.t === 'endTurn') {
+      // The thrower is done: whatever wasn't entered was a miss.
+      while (st.turnDarts.length < 3) {
+        st.turnDarts.push({ v: 0, m: 1 });
+        st.stats[p].dartsThrown++;
+        st.memberStats[p][memberOf(p)].dartsThrown++;
+      }
+      endTurn();
+      continue;
+    }
+
     const dart: Dart = { v: ev.v, m: ev.m };
     st.turnDarts.push(dart);
     st.stats[p].dartsThrown++;

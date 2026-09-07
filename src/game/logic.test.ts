@@ -248,3 +248,22 @@ test('alternative checkouts are distinct and fit the darts left', () => {
   assert.equal(formatRoute(three[0]), 'T20  D20');
   assert.equal(new Set(three.map(formatRoute)).size, three.length);
 });
+
+test('cricket: the check mark ends the turn, counting unentered darts as misses', () => {
+  const c = (v: number, m: 1 | 2 | 3 = 1): CricketEvent => ({ t: 'dart', v, m });
+  const setup = { kind: 'cricket' as const, players };
+  // Ann: single 17 then check -> 1 mark, 3 darts thrown, Bob to throw.
+  let st = replayCricket(setup, [c(17), { t: 'endTurn' }]);
+  assert.equal(st.marks[0][3], 1);
+  assert.equal(st.stats[0].dartsThrown, 3);
+  assert.equal(st.currentPlayer, 1);
+  assert.equal(st.turns[0].darts.length, 3);
+  // A bare check is a turn of three misses.
+  st = replayCricket(setup, [{ t: 'endTurn' }]);
+  assert.equal(st.stats[0].dartsThrown, 3);
+  assert.equal(st.currentPlayer, 1);
+  // After three darts the turn has already moved on; a check then ends the next player's turn.
+  st = replayCricket(setup, [c(20), c(20), c(20), { t: 'endTurn' }]);
+  assert.equal(st.currentPlayer, 0);
+  assert.equal(st.stats[1].dartsThrown, 3);
+});
