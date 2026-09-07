@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { type CricketState, marksPerRound } from '../game/cricket';
 import { type X01State, threeDartAverage } from '../game/x01';
+import { type ShanghaiState, shanghaiLabel } from '../game/shanghai';
 import { colors } from '../theme';
 
 type Row = { cells: (string | number)[]; sub?: boolean };
@@ -87,3 +88,15 @@ const styles = StyleSheet.create({
   first: { width: 110, textAlign: 'left', fontWeight: '700' },
   head: { color: colors.muted, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' },
 });
+
+export function ShanghaiStatsTable({ state }: { state: ShanghaiState }) {
+  const headers = ['Player', 'Total', ...state.setup.numbers.map(shanghaiLabel)];
+  const rows: Row[] = state.setup.players.map((p, i) => ({
+    cells: [
+      p.name + (state.winner === i ? ' 🏆' : ''),
+      state.scores[i],
+      ...state.setup.numbers.map((_, r) => (state.roundScores[i][r] === undefined ? '–' : state.roundScores[i][r])),
+    ],
+  }));
+  return <Table headers={headers} rows={rows} />;
+}

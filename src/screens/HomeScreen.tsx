@@ -6,7 +6,7 @@ import { colors, fonts } from '../theme';
 
 export function describeGame(game: Game): string {
   const names = game.setup.players.map((p) => p.name).join(' · ');
-  const type = game.setup.kind === 'x01' ? String(game.setup.startScore) : 'Cricket';
+  const type = game.setup.kind === 'x01' ? String(game.setup.startScore) : game.setup.kind === 'shanghai' ? 'Shanghai' : 'Cricket';
   return `${type}  —  ${names}`;
 }
 
@@ -27,7 +27,7 @@ export function HomeScreen({
         <Text style={styles.logo}>🎯</Text>
         <Text style={styles.title}>Dart Scoreboard</Text>
         <Text style={styles.credit}>Created by WolfysPub.com</Text>
-        <Text style={styles.subtitle}>501 · 301 · 701 · Cricket</Text>
+        <Text style={styles.subtitle}>501 · 301 · 701 · Cricket · Shanghai</Text>
       </View>
       <View style={styles.actions}>
         {current ? (

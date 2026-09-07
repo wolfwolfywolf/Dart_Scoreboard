@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { CricketScoring, GameSetup, Player } from '../types';
+import { shanghaiLabel } from '../game/shanghai';
 import { isTeam, newId } from '../game/darts';
 import { Button, Chip, Label, Screen, Segmented } from '../components/ui';
 import { colors, radius } from '../theme';
 
-type GameType = 301 | 501 | 701 | 'cricket';
+type GameFamily = 'x01' | 'cricket' | 'shanghai';
+type StartScore = 301 | 501 | 701;
+const ALL_NUMBERS = [...Array.from({ length: 20 }, (_, i) => i + 1), 25];
+const range = (a: number, b: number) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
 
 type Editing = { name: string; where: 'game' | 'recent' };
 
@@ -22,9 +26,13 @@ export function SetupScreen({
   onStart: (setup: GameSetup) => void;
   initial?: GameSetup;
 }) {
-  const [type, setType] = useState<GameType>(
-    initial?.kind === 'cricket' ? 'cricket' : ((initial?.startScore as GameType | undefined) ?? 501),
+  const [family, setFamily] = useState<GameFamily>(initial?.kind ?? 'x01');
+  const [startScore, setStartScore] = useState<StartScore>(
+    initial?.kind === 'x01' && [301, 501, 701].includes(initial.startScore) ? (initial.startScore as StartScore) : 501,
   );
+  const [numbers, setNumbers] = useState<number[]>(initial?.kind === 'shanghai' ? initial.numbers : range(1, 7));
+  const toggleNumber = (n: number) =>
+    setNumbers(numbers.includes(n) ? numbers.filter((x) => x !== n) : [...numbers, n].sort((a, b) => a - b));
   const [doubleOut, setDoubleOut] = useState(initial?.kind === 'x01' ? initial.doubleOut : true);
   const [legsToWin, setLegsToWin] = useState(initial?.kind === 'x01' ? initial.legsToWin : 1);
   const [cricketScoring, setCricketScoring] = useState<CricketScoring>(
@@ -81,13 +89,14 @@ export function SetupScreen({
     setName('');
   };
 
-  const canStart = players.length > 0 && unpaired === null;
+  const canStart = players.length > 0 && unpaired === null && (family !== 'shanghai' || numbers.length > 0);
 
   const start = () => {
     if (!canStart) return;
     const withIds = players.map((p) => ({ ...p, id: newId() }));
-    if (type === 'cricket') onStart({ kind: 'cricket', players: withIds, scoring: cricketScoring });
-    else onStart({ kind: 'x01', startScore: type, doubleOut, legsToWin, players: withIds });
+    if (family === 'cricket') onStart({ kind: 'cricket', players: withIds, scoring: cricketScoring });
+    else if (family === 'shanghai') onStart({ kind: 'shanghai', numbers, players: withIds });
+    else onStart({ kind: 'x01', startScore, doubleOut, legsToWin, players: withIds });
   };
 
   const suggestions = recentPlayers.filter((n) => !people.includes(n));
@@ -98,15 +107,44 @@ export function SetupScreen({
         <Label>Game</Label>
         <Segmented
           options={[
-            { label: '301', value: 301 as GameType },
-            { label: '501', value: 501 as GameType },
-            { label: '701', value: 701 as GameType },
-            { label: 'Cricket', value: 'cricket' as GameType },
+            { label: 'x01', value: 'x01' as GameFamily },
+            { label: 'Cricket', value: 'cricket' as GameFamily },
+            { label: 'Shanghai', value: 'shanghai' as GameFamily },
           ]}
-          value={type}
-          onChange={setType}
+          value={family}
+          onChange={setFamily}
         />
-        {type === 'cricket' ? (
+        {family === 'shanghai' ? (
+          <>
+            <Label>Numbers in play</Label>
+            <View style={styles.chips}>
+              <Chip label="1–7" onPress={() => setNumbers(range(1, 7))} />
+              <Chip label="1–9" onPress={() => setNumbers(range(1, 9))} />
+              <Chip label="1–20" onPress={() => setNumbers(range(1, 20))} />
+              <Chip label="Clear" onPress={() => setNumbers([])} />
+            </View>
+            <View style={styles.numberGrid}>
+              {ALL_NUMBERS.map((n) => {
+                const on = numbers.includes(n);
+                return (
+                  <Pressable
+                    key={n}
+                    onPress={() => toggleNumber(n)}
+                    style={({ pressed }) => [styles.numberKey, on && styles.numberKeyOn, pressed && { opacity: 0.7 }]}
+                  >
+                    <Text style={[styles.numberKeyText, on && { color: colors.accentText }]}>{shanghaiLabel(n)}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <Text style={styles.hint}>
+              {numbers.length === 0
+                ? 'Pick at least one number.'
+                : `${numbers.length} round${numbers.length === 1 ? '' : 's'}, lowest to highest. Only the round's number scores (single, double or triple). A single, double and triple of it in one turn is a Shanghai and wins outright. On Bull a Shanghai is two 25s and a 50.`}
+            </Text>
+          </>
+        ) : null}
+        {family === 'cricket' ? (
           <>
             <Label>Scoring</Label>
             <Segmented
@@ -126,8 +164,19 @@ export function SetupScreen({
                   : 'Hits on a number you have closed give points to every opponent who still has it open. Close everything with the lowest score to win.'}
             </Text>
           </>
-        ) : (
+        ) : null}
+        {family === 'x01' ? (
           <>
+            <Label>Start score</Label>
+            <Segmented
+              options={[
+                { label: '301', value: 301 as StartScore },
+                { label: '501', value: 501 as StartScore },
+                { label: '701', value: 701 as StartScore },
+              ]}
+              value={startScore}
+              onChange={setStartScore}
+            />
             <Label>Finish</Label>
             <Segmented
               options={[
@@ -144,7 +193,7 @@ export function SetupScreen({
               onChange={setLegsToWin}
             />
           </>
-        )}
+        ) : null}
 
         <Label>Format</Label>
         <Segmented
@@ -260,6 +309,19 @@ const styles = StyleSheet.create({
   // The add-player input flexes to share its row; in the edit sheet it must size itself.
   inputBlock: { flex: 0, alignSelf: 'stretch' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
+  numberGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
+  numberKey: {
+    width: '13%',
+    flexGrow: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+  },
+  numberKeyOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+  numberKeyText: { color: colors.text, fontSize: 16, fontWeight: '700' },
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
   sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 10 },
   sheetTitle: { color: colors.text, fontSize: 20, fontWeight: '800', textAlign: 'center' },

@@ -5,9 +5,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import { FrederickatheGreat_400Regular } from '@expo-google-fonts/fredericka-the-great';
 import { WalterTurncoat_400Regular } from '@expo-google-fonts/walter-turncoat';
-import type { CricketEvent, Game, GameSetup, X01Event } from './src/types';
+import type { CricketEvent, CricketGame, Game, GameSetup, ShanghaiEvent, X01Event } from './src/types';
 import { newId } from './src/game/darts';
-import { isGameFinished as isFinished, isX01Game as isX01 } from './src/game/replay';
+import { isGameFinished as isFinished, isShanghaiGame as isShanghai, isX01Game as isX01 } from './src/game/replay';
 import {
   loadCurrentGame,
   loadHistory,
@@ -20,6 +20,7 @@ import { HomeScreen } from './src/screens/HomeScreen';
 import { SetupScreen } from './src/screens/SetupScreen';
 import { X01GameScreen } from './src/screens/X01GameScreen';
 import { CricketGameScreen } from './src/screens/CricketGameScreen';
+import { ShanghaiGameScreen } from './src/screens/ShanghaiGameScreen';
 import { HistoryScreen } from './src/screens/HistoryScreen';
 import { HistoryDetailScreen } from './src/screens/HistoryDetailScreen';
 import { colors } from './src/theme';
@@ -83,10 +84,13 @@ export default function App() {
   );
 
   const startGame = (setup: GameSetup) => {
+    const base = { id: newId(), startedAt: Date.now(), events: [] };
     const g: Game =
       setup.kind === 'x01'
-        ? { id: newId(), startedAt: Date.now(), setup, events: [] }
-        : { id: newId(), startedAt: Date.now(), setup, events: [] };
+        ? { ...base, setup }
+        : setup.kind === 'shanghai'
+          ? { ...base, setup }
+          : { ...base, setup };
     setGame(g);
     saveCurrentGame(g);
     const people = setup.players.flatMap((p) => (p.members?.length ? p.members : [p.name]));
@@ -100,7 +104,13 @@ export default function App() {
     if (game && isX01(game)) commitGame({ ...game, events: [...game.events, ev] });
   };
   const onCricketEvent = (ev: CricketEvent) => {
-    if (game && !isX01(game)) commitGame({ ...game, events: [...game.events, ev] });
+    if (game && game.setup.kind === 'cricket') {
+      const g = game as CricketGame;
+      commitGame({ ...g, events: [...g.events, ev] });
+    }
+  };
+  const onShanghaiEvent = (ev: ShanghaiEvent) => {
+    if (game && isShanghai(game)) commitGame({ ...game, events: [...game.events, ev] });
   };
   const onUndo = () => {
     if (!game || game.events.length === 0) return;
@@ -156,6 +166,18 @@ export default function App() {
     case 'game':
       if (!game) {
         screen = <HomeScreen current={null} onResume={() => undefined} onNewGame={() => setRoute({ name: 'setup' })} onHistory={() => setRoute({ name: 'history' })} />;
+      } else if (isShanghai(game)) {
+        screen = (
+          <ShanghaiGameScreen
+            game={game}
+            onEvent={onShanghaiEvent}
+            onUndo={onUndo}
+            onBack={() => setRoute({ name: 'home' })}
+            onAbandon={abandon}
+            onRematch={rematch}
+            onDone={done}
+          />
+        );
       } else if (isX01(game)) {
         screen = (
           <X01GameScreen
@@ -171,7 +193,7 @@ export default function App() {
       } else {
         screen = (
           <CricketGameScreen
-            game={game}
+            game={game as CricketGame}
             onEvent={onCricketEvent}
             onUndo={onUndo}
             onBack={() => setRoute({ name: 'home' })}

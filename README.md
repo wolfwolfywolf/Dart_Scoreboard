@@ -9,6 +9,9 @@ React Native so one TypeScript codebase runs on both iOS and Android.
   and "first to N legs" matches.
 - **Cricket**: 15–20 and bull, with standard points, a no-points race to
   close, or cut-throat scoring; marks-per-round.
+- **Shanghai**: pick any set of numbers (1–20 and Bull); one round per number,
+  lowest to highest, only that number scores, and a single, double and triple
+  of it in one turn wins outright.
 - **Singles or doubles**: in doubles, two-person teams share a score and the
   teammates alternate throws. Stats are kept for the team and for each player.
 - **Two ways to enter scores** in x01: tap each dart (single/double/triple

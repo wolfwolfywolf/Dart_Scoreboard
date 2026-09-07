@@ -40,7 +40,14 @@ export interface CricketSetup {
   scoring?: CricketScoring;
 }
 
-export type GameSetup = X01Setup | CricketSetup;
+export interface ShanghaiSetup {
+  kind: 'shanghai';
+  /** Numbers in play, ascending; 25 is bull. One round per number. */
+  numbers: number[];
+  players: Player[];
+}
+
+export type GameSetup = X01Setup | CricketSetup | ShanghaiSetup;
 
 export type X01Event =
   | { t: 'dart'; v: number; m: Multiplier }
@@ -68,4 +75,14 @@ export interface CricketGame extends GameBase {
   events: CricketEvent[];
 }
 
-export type Game = X01Game | CricketGame;
+export type ShanghaiEvent =
+  | { t: 'dart'; v: number; m: Multiplier }
+  /** Finish the turn early: any darts not entered count as misses. */
+  | { t: 'endTurn' };
+
+export interface ShanghaiGame extends GameBase {
+  setup: ShanghaiSetup;
+  events: ShanghaiEvent[];
+}
+
+export type Game = X01Game | CricketGame | ShanghaiGame;

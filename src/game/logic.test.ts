@@ -4,7 +4,8 @@ import { continuedRoute, findCheckout, findCheckouts, formatRoute } from './chec
 import { replayX01, threeDartAverage } from './x01';
 import { replayCricket } from './cricket';
 import { CHECKOUT_CHART, chartRoute, chartTotal } from './checkoutChart';
-import type { CricketEvent, X01Event, X01Setup } from '../types';
+import { isShanghai, replayShanghai } from './shanghai';
+import type { CricketEvent, ShanghaiEvent, X01Event, X01Setup } from '../types';
 
 const players = [
   { id: 'a', name: 'Ann' },
@@ -266,4 +267,53 @@ test('cricket: the check mark ends the turn, counting unentered darts as misses'
   st = replayCricket(setup, [c(20), c(20), c(20), { t: 'endTurn' }]);
   assert.equal(st.currentPlayer, 0);
   assert.equal(st.stats[1].dartsThrown, 3);
+});
+
+test('shanghai: only the round number scores, rounds advance, highest total wins', () => {
+  const s = (v: number, m: 1 | 2 | 3 = 1): ShanghaiEvent => ({ t: 'dart', v, m });
+  const setup = { kind: 'shanghai' as const, numbers: [1, 2, 3], players };
+  // Round 1 (target 1): Ann hits 1, D1, 20 -> 3 points. Bob hits nothing via the check key.
+  let st = replayShanghai(setup, [s(1), s(1, 2), s(20)]);
+  assert.equal(st.scores[0], 3);
+  assert.equal(st.currentPlayer, 1);
+  assert.equal(st.round, 0);
+  st = replayShanghai(setup, [s(1), s(1, 2), s(20), { t: 'endTurn' }]);
+  assert.equal(st.round, 1);
+  assert.equal(st.currentPlayer, 0);
+  assert.equal(st.stats[1].dartsThrown, 3);
+  // Play out the rest: Bob scores 6 on the 3s and wins 6-3.
+  const all: ShanghaiEvent[] = [
+    s(1), s(1, 2), s(20), { t: 'endTurn' },
+    { t: 'endTurn' }, { t: 'endTurn' },
+    { t: 'endTurn' }, s(3, 2), s(0), s(0),
+  ];
+  st = replayShanghai(setup, all);
+  assert.equal(st.finished, true);
+  assert.deepEqual(st.scores, [3, 6]);
+  assert.equal(st.winner, 1);
+  assert.deepEqual(st.tied, []);
+  assert.equal(st.roundScores[1][2], 6);
+});
+
+test('shanghai: single, double and triple in any order wins on the spot', () => {
+  const s = (v: number, m: 1 | 2 | 3 = 1): ShanghaiEvent => ({ t: 'dart', v, m });
+  const setup = { kind: 'shanghai' as const, numbers: [5, 6, 7], players };
+  const st = replayShanghai(setup, [s(5, 3), s(5), s(5, 2)]);
+  assert.equal(st.finished, true);
+  assert.equal(st.winner, 0);
+  assert.deepEqual(st.shanghai, { player: 0, target: 5 });
+  assert.equal(st.turns[0].shanghai, true);
+  // Two singles and a triple is not a Shanghai.
+  assert.equal(isShanghai(5, [{ v: 5, m: 1 }, { v: 5, m: 1 }, { v: 5, m: 3 }]), false);
+  // Bull: two 25s and one 50.
+  assert.equal(isShanghai(25, [{ v: 25, m: 1 }, { v: 25, m: 2 }, { v: 25, m: 1 }]), true);
+  assert.equal(isShanghai(25, [{ v: 25, m: 2 }, { v: 25, m: 2 }, { v: 25, m: 1 }]), false);
+});
+
+test('shanghai: ties are reported', () => {
+  const s = (v: number, m: 1 | 2 | 3 = 1): ShanghaiEvent => ({ t: 'dart', v, m });
+  const setup = { kind: 'shanghai' as const, numbers: [4], players };
+  const st = replayShanghai(setup, [s(4), s(0), s(0), s(4), s(0), s(0)]);
+  assert.equal(st.finished, true);
+  assert.deepEqual(st.tied, [0, 1]);
 });

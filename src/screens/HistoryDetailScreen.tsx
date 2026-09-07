@@ -5,7 +5,8 @@ import { replayCricket } from '../game/cricket';
 import { dartLabel } from '../game/darts';
 import { isX01Game } from '../game/replay';
 import { replayX01 } from '../game/x01';
-import { CricketStatsTable, X01StatsTable } from '../components/Stats';
+import { replayShanghai, shanghaiLabel } from '../game/shanghai';
+import { CricketStatsTable, ShanghaiStatsTable, X01StatsTable } from '../components/Stats';
 import { Label, Screen } from '../components/ui';
 import { colors, radius } from '../theme';
 
@@ -24,6 +25,21 @@ export function HistoryDetailScreen({ game, onBack }: { game: Game; onBack: () =
           right: t.bust ? 'BUST' : t.finished ? `${t.scored} ✓` : String(t.scored),
           highlight: t.finished,
           bad: t.bust,
+        })),
+      };
+    }
+    if (game.setup.kind === 'shanghai') {
+      const sh = replayShanghai(game.setup, game.events);
+      return {
+        title: 'Shanghai',
+        table: <ShanghaiStatsTable state={sh} />,
+        turns: sh.turns.map((t, i) => ({
+          key: String(i),
+          left: `${shanghaiLabel(t.target)}s · ${t.thrower}`,
+          middle: t.darts.map(dartLabel).join('  '),
+          right: t.shanghai ? `${t.scored} SHANGHAI` : String(t.scored),
+          highlight: t.shanghai,
+          bad: false,
         })),
       };
     }

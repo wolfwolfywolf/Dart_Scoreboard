@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Game } from '../types';
 import { gameWinner } from '../game/replay';
+import { shanghaiLabel } from '../game/shanghai';
 import { Button, Screen } from '../components/ui';
 import { colors, radius } from '../theme';
 
@@ -49,7 +50,9 @@ export function HistoryScreen({
             const type =
               item.setup.kind === 'x01'
                 ? `${item.setup.startScore}${item.setup.legsToWin > 1 ? ` · first to ${item.setup.legsToWin}` : ''}`
-                : item.setup.scoring === 'closeOnly'
+                : item.setup.kind === 'shanghai'
+                  ? `Shanghai · ${item.setup.numbers.map(shanghaiLabel).join(' ')}`
+                  : item.setup.scoring === 'closeOnly'
                   ? 'Cricket · no points'
                   : item.setup.scoring === 'cutThroat'
                     ? 'Cricket · cut-throat'
