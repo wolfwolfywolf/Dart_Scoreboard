@@ -6,7 +6,9 @@ import { colors } from '../theme';
 /**
  * Per-dart entry. Tap a multiplier (Double/Triple) then a number; the multiplier
  * resets to Single after each dart. Bull follows the multiplier too: Single is
- * the outer bull (25), Double is the bullseye (50).
+ * the outer bull (25), Double is the bullseye (50). Key labels never change with
+ * the multiplier: the lit multiplier button is the only indicator, so the eye can
+ * always find "15" where it expects it.
  */
 export function DartKeypad({
   numbers,
@@ -35,12 +37,12 @@ export function DartKeypad({
   // separate row of odd-looking controls.
   const columns = 5;
   const keys: React.ReactNode[] = numbers.map((n) => (
-    <Key key={n} label={mult === 1 ? String(n) : mult === 2 ? `D${n}` : `T${n}`} onPress={() => hit(n)} height={keyHeight} />
+    <Key key={n} label={String(n)} onPress={() => hit(n)} height={keyHeight} />
   ));
   keys.push(
     <Key
       key="bull"
-      label={mult === 3 ? 'Bull' : mult === 2 ? 'Bull 50' : 'Bull 25'}
+      label="Bull"
       onPress={() => hit(25, mult === 3 ? 2 : mult)}
       disabled={mult === 3}
       height={keyHeight}
