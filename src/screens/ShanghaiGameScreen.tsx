@@ -117,6 +117,7 @@ export function ShanghaiGameScreen({
               </View>
             );
           })}
+          {!state.finished ? <Text style={styles.toThrow}>{state.thrower} to throw</Text> : null}
         </View>
       </View>
     </View>
@@ -204,6 +205,7 @@ const styles = StyleSheet.create({
   dartSlot: { width: 64, height: 40, borderRadius: 10, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   dartSlotFilled: { backgroundColor: colors.card, borderColor: colors.accent },
   dartText: { color: colors.text, fontSize: 18, fontWeight: '700' },
+  toThrow: { color: colors.accent, fontWeight: '600', marginLeft: 'auto', fontSize: 15 },
 
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
   sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 8 },
