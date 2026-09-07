@@ -36,7 +36,6 @@ export function ShanghaiGameScreen({
 
   const p = state.currentPlayer;
   const target = setup.numbers[Math.min(state.round, setup.numbers.length - 1)];
-  const lastTurn = state.turns.length ? state.turns[state.turns.length - 1] : null;
 
   const { width, height, isWide, twoPane } = useLayout();
   const insets = useSafeAreaInsets();
@@ -118,14 +117,7 @@ export function ShanghaiGameScreen({
               </View>
             );
           })}
-          <Text style={styles.turnSum}>{state.turnScore}</Text>
         </View>
-        <Text style={styles.info} numberOfLines={1}>
-          {state.finished
-            ? ''
-            : `${state.thrower} on ${shanghaiLabel(target)}s · round ${state.round + 1} of ${setup.numbers.length}` +
-              (lastTurn ? `  ·  ${lastTurn.thrower} scored ${lastTurn.scored}` : '')}
-        </Text>
       </View>
     </View>
   );
@@ -207,13 +199,12 @@ const styles = StyleSheet.create({
   numberText: { color: chalk.white, fontSize: 20, fontFamily: fonts.chalk },
   numberDone: { color: chalk.dim, textDecorationLine: 'line-through' },
   numberNow: { color: chalk.yellow },
-  turn: { marginTop: 10, gap: 6 },
+  turn: { marginTop: 10, marginBottom: 6 },
   turnDarts: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   dartSlot: { width: 64, height: 40, borderRadius: 10, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   dartSlotFilled: { backgroundColor: colors.card, borderColor: colors.accent },
   dartText: { color: colors.text, fontSize: 18, fontWeight: '700' },
-  turnSum: { color: colors.muted, fontSize: 22, fontWeight: '800', marginLeft: 'auto', fontVariant: ['tabular-nums'] },
-  info: { color: colors.accent, fontSize: 16, fontWeight: '600', minHeight: 20, marginBottom: 6 },
+
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
   sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 8 },
   sheetTitle: { color: colors.text, fontSize: 22, fontWeight: '800', textAlign: 'center' },
