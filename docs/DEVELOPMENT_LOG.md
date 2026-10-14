@@ -173,6 +173,13 @@ refer to this repository's `main` branch.
   (lower-case "the"). Custom fonts on Android must not be combined with
   `fontWeight`; use the family alone.
 - **Dashed borders** render badly on Android; use solid faint lines.
+- **`npm audit fix --force` wrecked the install** (2026-10-14). It
+  "fixed" audit warnings by downgrading Expo 57 → 44 and React Native
+  0.86 → 0.72, which cannot run the app. Recovery:
+  `git checkout -- package.json package-lock.json && rm -rf node_modules
+  && npm install`. The audit warnings are in build-time tooling pinned by
+  Expo and are not a risk to the app on a phone. Never use `--force`;
+  treat `npm audit`, `npm fund` and "new npm available" as informational.
 
 ## 6. UI conventions decided along the way
 
