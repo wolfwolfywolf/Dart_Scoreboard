@@ -7,6 +7,5 @@ Deployed on Vercel with **Root Directory** set to `site`. `vercel.json` turns
 on clean URLs, so `dart-scoreboard/privacy.html` is served at
 `/dart-scoreboard/privacy`.
 
-Before going live, replace `SUPPORT_EMAIL` in `dart-scoreboard/support.html`
-with the real contact address. When the app is in the store, swap the
-"coming soon" badges in `index.html` for links.
+When the app is in the store, swap the "coming soon" badges in
+`index.html` for links.

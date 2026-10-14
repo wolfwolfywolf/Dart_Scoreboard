@@ -24,8 +24,7 @@ Google accounts.
    set Root Directory to `site`, add the `wolfyspub.com` domain). The
    privacy policy is then at `https://wolfyspub.com/dart-scoreboard/privacy`
    and the support page at `https://wolfyspub.com/dart-scoreboard/support`.
-   Google requires a public URL for the policy. Replace `SUPPORT_EMAIL` in
-   `site/dart-scoreboard/support.html` first.
+   Google requires a public URL for the policy.
 3. **Expo account**: already have one. Install the CLI and link the project
    (run from the project folder; `eas init` writes the project ID into
    `app.json`, commit that change):
@@ -74,7 +73,8 @@ For a quick install on your own phone without the store, use
    - Phone screenshots: at least 2 (take them on the Pixel: a game in
      progress, the setup screen, the checkout chart, a Cricket board).
      Tablet screenshots optional but recommended.
-   - Category: Sports. Contact email: yours. Website: https://wolfyspub.com.
+   - Category: Sports. Contact email: support@wolfyspub.com.
+     Website: https://wolfyspub.com.
 
 ## Test, then release
 
