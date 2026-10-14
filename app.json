@@ -39,6 +39,12 @@
     "description": "Keep score for darts: 301/501/701, Cricket and Shanghai, singles or doubles, with checkout hints and stats.",
     "runtimeVersion": {
       "policy": "appVersion"
+    },
+    "owner": "wolfwolfywolf",
+    "extra": {
+      "eas": {
+        "projectId": "f1fbe253-c1dc-41b8-889e-9e819eb80e25"
+      }
     }
   }
 }
