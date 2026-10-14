@@ -26,7 +26,7 @@ header.site .brand img { width: 32px; height: 32px; border-radius: 8px; }
 header.site nav a { color: var(--muted); text-decoration: none; margin-left: 18px; font-weight: 600; }
 header.site nav a:hover { color: var(--text); }
 .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: center; padding: 40px 0 24px; }
-.hero img { width: 100%; max-width: 360px; border-radius: 28px; display: block; margin: 0 auto; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.hero img { width: 100%; height: auto; aspect-ratio: 1; max-width: 360px; border-radius: 28px; display: block; margin: 0 auto; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
 .hero h1 { font-size: 44px; line-height: 1.1; margin: 0 0 12px; }
 .hero p.lead { color: var(--muted); font-size: 19px; margin: 0 0 24px; }
 .badges { display: flex; flex-wrap: wrap; gap: 12px; }
