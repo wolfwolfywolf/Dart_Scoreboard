@@ -59,9 +59,7 @@ eas build --platform android --profile preview   # .apk you can sideload
 eas build --platform ios                          # needs an Apple Developer account
 ```
 
-Before publishing, change `ios.bundleIdentifier` and `android.package` in
-`app.json` to identifiers you own, and replace the placeholder icons in
-`assets/`.
+See `docs/PLAY_STORE.md` for the full Google Play checklist.
 
 ## Development
 

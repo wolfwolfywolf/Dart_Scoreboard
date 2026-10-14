@@ -242,6 +242,10 @@ substitute for native (see §5).
 
 ### 7.4 Building installable apps
 
+Play Store publishing is covered step by step in `docs/PLAY_STORE.md`
+(package name `com.wolfyspub.dartscoreboard`, `eas.json` profiles, privacy
+policy in `docs/PRIVACY_POLICY.md`, store graphics in `store/`).
+
 EAS Build (`eas build --platform android --profile preview` for an APK;
 `--platform ios` needs an Apple developer account). Change
 `ios.bundleIdentifier` / `android.package` in `app.json` to identifiers
