@@ -124,4 +124,4 @@ STATS AND HISTORY
 Works on phones and tablets, portrait or landscape. No account, no ads,
 no data collection: everything stays on your device.
 
-Created by WolfysPub.com
+Created by WolfysPub Games · WolfysPub.com
