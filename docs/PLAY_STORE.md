@@ -20,9 +20,12 @@ Google accounts.
    One-time fee, identity verification takes a day or two. A personal
    account must run a closed test with 12 testers for 14 days before
    production; an organization account (needs a D-U-N-S number) skips that.
-2. **Publish the privacy policy** from `docs/PRIVACY_POLICY.md` as a page on
-   WolfysPub.com, e.g. `https://wolfyspub.com/dart-scoreboard/privacy`.
-   Google requires a public URL.
+2. **Publish the website** in `site/` on Vercel (import this repository,
+   set Root Directory to `site`, add the `wolfyspub.com` domain). The
+   privacy policy is then at `https://wolfyspub.com/dart-scoreboard/privacy`
+   and the support page at `https://wolfyspub.com/dart-scoreboard/support`.
+   Google requires a public URL for the policy. Replace `SUPPORT_EMAIL` in
+   `site/dart-scoreboard/support.html` first.
 3. **Expo account**: already have one. Install the CLI and link the project
    (run from the project folder; `eas init` writes the project ID into
    `app.json`, commit that change):
@@ -71,7 +74,7 @@ For a quick install on your own phone without the store, use
    - Phone screenshots: at least 2 (take them on the Pixel: a game in
      progress, the setup screen, the checkout chart, a Cricket board).
      Tablet screenshots optional but recommended.
-   - Category: Sports. Contact email: yours. Website: WolfysPub.com.
+   - Category: Sports. Contact email: yours. Website: https://wolfyspub.com.
 
 ## Test, then release
 

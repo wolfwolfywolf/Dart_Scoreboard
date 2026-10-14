@@ -242,6 +242,8 @@ substitute for native (see §5).
 
 ### 7.4 Building installable apps
 
+The public website (landing page, privacy policy, support) lives in
+`site/` and deploys to Vercel with Root Directory `site`.
 Play Store publishing is covered step by step in `docs/PLAY_STORE.md`
 (package name `com.wolfyspub.dartscoreboard`, `eas.json` profiles, privacy
 policy in `docs/PRIVACY_POLICY.md`, store graphics in `store/`).
