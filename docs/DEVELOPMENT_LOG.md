@@ -144,7 +144,15 @@ refer to this repository's `main` branch.
 | `da4c49c` | Keypad labels never change with the multiplier (15 stays 15, Bull stays Bull). |
 | `91e7b6e` | Shanghai. |
 | `73a1863`, `82c0f3d` | Shanghai scoreboard tidied; "X to throw" line added for consistency. |
-| iOS PR | iOS target: export-compliance flag, `expo-system-ui` for the dark root view, keyboard-safe setup screen, GitHub Actions (checks + macOS simulator build), `docs/APP_STORE.md`. |
+| `8ad9ecb`, `cee684c` | This development log. |
+| `68453b1`, `8314b89` | Google Play prep: package `com.wolfyspub.dartscoreboard`, `eas.json`, privacy policy, listing text, store graphics; copy matched to the developer name WolfysPub Games. |
+| `b5204d0`, `4eb9345`, `3d45b7e`, `5e7224d` | WolfysPub.com site in `site/` (landing, privacy, support); support email; pages as folders for clean URLs. |
+| `bc5bb09` | Linked to EAS (`extra.eas.projectId`). |
+| `e9858f9`, `982cb22` | Submission status logged; project `CLAUDE.md`. |
+| (launch follow-ups PR) | Launch follow-ups: unused template permissions blocked, `npm run version:bump`, update and release-notes process in `docs/PLAY_STORE.md`, Markdown privacy policy matched to the published page. |
+| (tap-to-pass PR) | Version 1.1.0: tap the next side of the scoreboard to end the turn, like the ✓ key (x01 commits a typed total or scores 0 for the darts left). |
+| (cricket-center PR) | Cricket with two sides: numbers column in the middle, one side's marks and score either side (part of 1.1.0). |
+| (iOS support PR) | iOS target: export-compliance flag, `expo-system-ui` for the dark root view, keyboard-safe setup screen, GitHub Actions (checks + macOS simulator build), `docs/APP_STORE.md`. |
 
 ## 5. Bugs, causes, and lessons
 
@@ -175,6 +183,15 @@ refer to this repository's `main` branch.
   (lower-case "the"). Custom fonts on Android must not be combined with
   `fontWeight`; use the family alone.
 - **Dashed borders** render badly on Android; use solid faint lines.
+- **`permissions: []` no longer strips template permissions** (found
+  2026-10-15, after the first upload). On SDK 57, `npx expo prebuild`
+  still emitted READ/WRITE_EXTERNAL_STORAGE, SYSTEM_ALERT_WINDOW and
+  VIBRATE, which the app never uses and which contradict the privacy
+  policy. *Fix:* list them in `android.blockedPermissions` (applies to
+  EAS builds, not Expo Go). *Check:* copy the repo to a scratch folder,
+  run `CI=1 npx expo prebuild --platform android --no-install` there and
+  grep `uses-permission` in `android/app/src/main/AndroidManifest.xml`;
+  only INTERNET should remain without `tools:node="remove"`.
 - **iOS doesn't resize for the keyboard.** The setup screen's add-player
   field and the edit-player sheet were hidden behind it on small iPhones.
   *Fix:* `automaticallyAdjustKeyboardInsets` on the setup ScrollView; the
@@ -200,11 +217,21 @@ refer to this repository's `main` branch.
   (25 / 50; disabled under Triple). Miss and Undo look like number keys.
   Red is reserved for destructive actions (End game, delete).
 - Scoreboard (x01, Shanghai): chalkboard cards; 1–2 players in a row,
-  3 in a compact row, 4+ in rows of two. Cricket: chalkboard grid. Active
+  3 in a compact row, 4+ in rows of two. Cricket: chalkboard grid; with
+  two players or teams the numbers (20 down to Bull) run down the middle
+  with one side's column left and the other right, with 3+ the numbers are
+  on the left and every column follows. Active
   player/team in yellow chalk; in doubles the teammate on the oche has an
   arrow. Marks per round is *not* shown on the board (only in stats).
 - Under the cards: three dart slots for the current turn and "X to throw"
   on the right, on every game screen.
+- Tapping the side of whoever throws next (their x01/Shanghai card, or
+  anywhere in their Cricket column) ends the current turn exactly as ✓
+  would: darts entered stand, the rest are misses. x01 has no ✓ key, so
+  there it enters the typed total if Turn total has one, else a `total: 0`
+  event (no new event type, so older history still replays). Tapping the
+  active side, or anyone else in a 3+ player game, does nothing, so a
+  stray tap can't skip a player; Undo reverses a pass like any entry.
 - Landscape on a wide screen: scoreboard left, keypad right (fixed width
   360–460). Portrait tablets: stacked, centred, max width 720.
 - Names: long-press to edit or delete; renaming in a game also fixes the
@@ -273,10 +300,11 @@ Play Store publishing is covered step by step in `docs/PLAY_STORE.md`
 policy in `docs/PRIVACY_POLICY.md`, store graphics in `store/`).
 
 EAS Build (`eas build --platform android --profile preview` for an APK;
-`--platform ios` needs an Apple developer account). Change
-`ios.bundleIdentifier` / `android.package` in `app.json` to identifiers
-you own first. Icons regenerate with `python3 scripts/make-icons.py`
-(needs Pillow).
+`--platform ios` needs an Apple developer account). The identifiers
+`com.wolfyspub.dartscoreboard` in `app.json` are permanent. Releasing an
+update (version bump with `npm run version:bump`, release notes, build,
+upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
+`python3 scripts/make-icons.py` (needs Pillow).
 
 ## 8. Release status
 
@@ -290,8 +318,16 @@ you own first. Icons regenerate with `python3 scripts/make-icons.py`
   listing and questionnaires completed, bundle uploaded to Internal
   testing with first-release notes. Awaiting Google's initial review.
   Next: tester opt-in, closed test (12 testers / 14 days), production
-  access, then swap the "coming soon" badges on the website for the store
-  link.
+  access, then swap the Google Play "coming soon" badge on the website for
+  the store link.
+- 2026-10-15: Launch follow-ups (blocked unused
+  permissions, version bump script, release notes section). The website
+  stays unchanged until Play approves the app. The blocked permissions take effect from the next production
+  build; the bundle under review still declares them.
+- 2026-10-15: Version 1.1.0 prepared (tap the next side to end the turn);
+  release notes in `docs/PLAY_STORE.md`. Not built or uploaded yet.
+- 2026-10-15: Cricket numbers moved to the centre for two-sided games;
+  rides along in 1.1.0 (no extra version bump).
 - 2026-10-15: iOS target added (bundle ID `com.wolfyspub.dartscoreboard`,
   iPad supported). Simulator build compiles in CI. Next: Apple Developer
   Program enrolment (individual vs organization decides the seller name),

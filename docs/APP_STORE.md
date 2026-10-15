@@ -144,7 +144,9 @@ the checkout chart, a Cricket board.
 
 ## Updates
 
-Bump `version` in `app.json` (e.g. 1.0.1), commit, then:
+Bump the version with `npm run version:bump -- patch` (or `minor`; it updates
+`app.json`, `package.json` and the lockfile together, see `docs/PLAY_STORE.md`),
+commit, then:
 
 ```sh
 eas build --platform ios --profile production --auto-submit

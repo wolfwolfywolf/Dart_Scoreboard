@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Modal, StyleSheet, Text, View } from 'react-native';
+import { Alert, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Multiplier, X01Event, X01Game } from '../types';
 import { continuedRoute, findCheckout, findCheckouts, formatRoute } from '../game/checkout';
@@ -37,6 +37,7 @@ export function X01GameScreen({
   const state = useMemo(() => replayX01(setup, game.events), [setup, game.events]);
   const [mode, setMode] = useState<'dart' | 'total'>('dart');
   const [error, setError] = useState<string | null>(null);
+  const [totalEntry, setTotalEntry] = useState('');
   const [pendingFinish, setPendingFinish] = useState<{ total: number; counts: number[] } | null>(null);
   const [showChart, setShowChart] = useState(false);
   // Measured heights of the parts above the keypad, so key size is worked out from real space.
@@ -106,6 +107,20 @@ export function X01GameScreen({
     return true;
   };
 
+  // Tapping the card of whoever throws next ends this turn and commits what is pending:
+  // a typed total is entered as if Enter were pressed; otherwise the darts left score 0
+  // (a total of 0), and any darts already entered still count.
+  const next = (p + 1) % n;
+  const canPass = !state.finished && n > 1;
+  const passTurn = () => {
+    if (mode === 'total' && totalEntry !== '') {
+      if (onTotal(Number(totalEntry))) setTotalEntry('');
+      return;
+    }
+    setError(null);
+    onEvent({ t: 'total', total: 0 });
+  };
+
   const confirmEnd = () =>
     Alert.alert('End game?', 'This game will be discarded and not saved to history.', [
       { text: 'Keep playing', style: 'cancel' },
@@ -134,9 +149,14 @@ export function X01GameScreen({
         {row.map((i) => {
           const pl = setup.players[i];
           const active = i === p && !state.finished;
+          const passTo = canPass && i === next;
           return (
-            <View
+            <Pressable
               key={pl.id}
+              onPress={passTurn}
+              disabled={!passTo}
+              accessibilityRole={passTo ? 'button' : undefined}
+              accessibilityLabel={passTo ? `End turn, ${pl.name} to throw` : undefined}
               style={[styles.card, active && styles.cardActive, compact && styles.cardCompact]}
             >
               <View style={styles.cardHead}>
@@ -159,7 +179,7 @@ export function X01GameScreen({
                 </View>
               ) : null}
               <Text style={styles.avg}>avg {threeDartAverage(state.stats[i]).toFixed(1)}</Text>
-            </View>
+            </Pressable>
           );
         })}
         </View>
@@ -200,6 +220,7 @@ export function X01GameScreen({
               onChange={(m) => {
                 setMode(m);
                 setError(null);
+                setTotalEntry('');
               }}
             />
           </View>
@@ -235,7 +256,15 @@ export function X01GameScreen({
         {mode === 'dart' ? (
           <DartKeypad numbers={NUMBERS} onDart={onDart} onUndo={onUndo} canUndo={canUndo} keyHeight={keyHeight} />
         ) : (
-          <TotalKeypad onTotal={onTotal} onUndo={onUndo} canUndo={canUndo} error={error} keyHeight={keyHeight} />
+          <TotalKeypad
+            entry={totalEntry}
+            onEntryChange={setTotalEntry}
+            onTotal={onTotal}
+            onUndo={onUndo}
+            canUndo={canUndo}
+            error={error}
+            keyHeight={keyHeight}
+          />
         )}
       </View>
     </View>

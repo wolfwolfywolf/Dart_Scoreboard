@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Modal, StyleSheet, Text, View } from 'react-native';
+import { Alert, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { CricketEvent, CricketGame, Multiplier } from '../types';
 import { CRICKET_NUMBERS, replayCricket } from '../game/cricket';
@@ -43,6 +43,26 @@ export function CricketGameScreen({
 
   const onDart = (v: number, m: Multiplier) => onEvent({ t: 'dart', v, m });
 
+  // Tapping anywhere in the column of whoever throws next ends this turn, the same as the ✓ key.
+  const n = setup.players.length;
+  const next = (p + 1) % n;
+  const canPass = !state.finished && n > 1;
+  const passTurn = () => onEvent({ t: 'endTurn' });
+  const passProps = (i: number, name: string) => {
+    const passTo = canPass && i === next;
+    return {
+      onPress: passTurn,
+      disabled: !passTo,
+      accessibilityRole: passTo ? ('button' as const) : undefined,
+      accessibilityLabel: passTo ? `End turn, ${name} to throw` : undefined,
+    };
+  };
+
+  // Two sides: numbers down the middle, one side's marks and score either side of them.
+  // Three or more: numbers on the left, everyone in columns to the right.
+  const arrange = (numberCell: React.ReactNode, sides: React.ReactNode[]) =>
+    n === 2 ? [sides[0], numberCell, sides[1]] : [numberCell, ...sides];
+
   const { width, height, isWide, twoPane } = useLayout();
   const insets = useSafeAreaInsets();
   const [boardH, setBoardH] = useState<number | null>(null);
@@ -63,39 +83,47 @@ export function CricketGameScreen({
       <Chalkboard fill={tall}>
       <View style={[styles.board, tall && styles.boardTall]}>
         <View style={styles.row}>
-          <View style={styles.numberCell} />
-          {setup.players.map((pl, i) => (
-            <View key={pl.id} style={[styles.playerCell, i === p && !state.finished && styles.activeCol]}>
-              <Text style={[styles.playerName, i === p && { color: chalk.yellow }]} numberOfLines={1}>
-                {pl.name}
-              </Text>
-              {withPoints ? <Text style={styles.points}>{state.points[i]}</Text> : null}
-            </View>
-          ))}
+          {arrange(
+            <View key="num" style={styles.numberCell} />,
+            setup.players.map((pl, i) => (
+              <Pressable key={pl.id} {...passProps(i, pl.name)} style={[styles.playerCell, i === p && !state.finished && styles.activeCol]}>
+                <Text style={[styles.playerName, i === p && { color: chalk.yellow }]} numberOfLines={1}>
+                  {pl.name}
+                </Text>
+                {withPoints ? <Text style={styles.points}>{state.points[i]}</Text> : null}
+              </Pressable>
+            )),
+          )}
         </View>
         {CRICKET_NUMBERS.map((n, idx) => {
           const dead = state.marks.every((row) => row[idx] >= 3);
           return (
             <View key={n} style={[styles.row, tall && { flex: 1, alignItems: 'stretch' }]}>
-              <View style={[styles.numberCell, tall && { justifyContent: 'center' }]}>
-                <Text
-                  style={[
-                    styles.number,
-                    tall && { fontSize: n === 25 ? Math.round(markSize * 0.7) : markSize },
-                    dead && { color: chalk.dim, textDecorationLine: 'line-through' },
-                  ]}
-                  numberOfLines={1}
-                >
-                  {n === 25 ? 'Bull' : n}
-                </Text>
-              </View>
-              {setup.players.map((pl, i) => (
-                <View key={pl.id} style={[styles.markCell, tall && styles.cellTall, i === p && !state.finished && styles.activeCol]}>
-                  <Text style={[styles.mark, tall && { fontSize: markSize + 4, minHeight: 0 }, state.marks[i][idx] >= 3 && { color: chalk.yellow }]}>
-                    {MARK_GLYPH[Math.min(state.marks[i][idx], 3)]}
+              {arrange(
+                <View key="num" style={[styles.numberCell, tall && { justifyContent: 'center' }]}>
+                  <Text
+                    style={[
+                      styles.number,
+                      tall && { fontSize: n === 25 ? Math.round(markSize * 0.7) : markSize },
+                      dead && { color: chalk.dim, textDecorationLine: 'line-through' },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {n === 25 ? 'Bull' : n}
                   </Text>
-                </View>
-              ))}
+                </View>,
+                setup.players.map((pl, i) => (
+                  <Pressable
+                    key={pl.id}
+                    {...passProps(i, pl.name)}
+                    style={[styles.markCell, tall && styles.cellTall, i === p && !state.finished && styles.activeCol]}
+                  >
+                    <Text style={[styles.mark, tall && { fontSize: markSize + 4, minHeight: 0 }, state.marks[i][idx] >= 3 && { color: chalk.yellow }]}>
+                      {MARK_GLYPH[Math.min(state.marks[i][idx], 3)]}
+                    </Text>
+                  </Pressable>
+                )),
+              )}
             </View>
           );
         })}

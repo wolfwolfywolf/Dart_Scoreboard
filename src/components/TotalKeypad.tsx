@@ -1,26 +1,31 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme';
 import { Key } from './DartKeypad';
 
 const QUICK = [26, 41, 45, 60, 81, 85, 100, 140, 180];
 
-/** Whole-turn entry: type the three-dart total (or tap a common score) and press Enter. */
+/**
+ * Whole-turn entry: type the three-dart total (or tap a common score) and press Enter.
+ * The typed digits are held by the screen (`entry`), so it can also submit them.
+ */
 export function TotalKeypad({
+  entry,
+  onEntryChange: setEntry,
   onTotal,
   onUndo,
   canUndo,
   error,
   keyHeight,
 }: {
+  entry: string;
+  onEntryChange: (entry: string) => void;
   onTotal: (total: number) => boolean;
   onUndo: () => void;
   canUndo: boolean;
   error: string | null;
   keyHeight?: number;
 }) {
-  const [entry, setEntry] = useState('');
-
   const submit = (value: number) => {
     if (onTotal(value)) setEntry('');
   };

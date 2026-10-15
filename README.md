@@ -48,19 +48,21 @@ To preview in a desktop browser instead of a phone, run `npm run web`.
 
 ## Building installable apps
 
-Use [EAS Build](https://docs.expo.dev/build/introduction/) to produce store-ready
-binaries in the cloud (a free Expo account is enough to get started):
+The project is linked to EAS (`eas.json`, `app.json` `extra.eas`), so
+[EAS Build](https://docs.expo.dev/build/introduction/) produces binaries in
+the cloud:
 
 ```sh
 npm install -g eas-cli
 eas login
-eas build:configure
-eas build --platform android --profile preview   # .apk you can sideload
-eas build --platform ios                          # needs an Apple Developer account
+eas build --platform android --profile preview      # .apk you can sideload
+eas build --platform android --profile production   # .aab for Google Play
+eas build --platform ios                             # needs an Apple Developer account
 ```
 
-See `docs/PLAY_STORE.md` for the full Google Play checklist and
-`docs/APP_STORE.md` for the App Store (no Mac needed).
+See `docs/PLAY_STORE.md` for the Google Play checklist, releasing updates
+(`npm run version:bump`) and the store listing text, and `docs/APP_STORE.md`
+for the App Store (no Mac needed).
 
 ## Development
 
@@ -74,10 +76,14 @@ Layout:
 - `src/game/` — pure scoring logic. A game is a setup plus an append-only list
   of events (darts or turn totals); the state is rebuilt by replaying the
   events, which is what makes undo trivial and keeps history exact.
-  - `x01.ts`, `cricket.ts` — the rules
-  - `checkout.ts` — checkout finder / suggestions
+  - `x01.ts`, `cricket.ts`, `shanghai.ts` — the rules
+  - `checkout.ts`, `checkoutChart.ts` — checkout finder / suggestions and
+    the double-out chart
   - `logic.test.ts` — tests
-- `src/screens/` — Home, Setup, x01 game, Cricket game, History, History detail
+- `src/screens/` — Home, Setup, x01, Cricket and Shanghai games, checkout
+  chart, History, History detail
 - `src/components/` — keypads, stats tables, shared UI
 - `src/storage.ts` — AsyncStorage persistence
 - `App.tsx` — screen switching and game/history state
+- `site/` — the WolfysPub.com website (Vercel), `store/` — Play Store graphics,
+  `docs/` — development log, Play Store checklist, privacy policy
