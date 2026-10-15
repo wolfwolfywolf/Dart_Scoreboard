@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, BackHandler, Platform, StyleSheet, Text, View } from 'react-native';
 import type { Game } from '../types';
 import { Button, Screen } from '../components/ui';
 import { colors, fonts } from '../theme';
@@ -21,6 +21,17 @@ export function HomeScreen({
   onNewGame: () => void;
   onHistory: () => void;
 }) {
+  // Android only: iOS apps must not quit themselves (App Store rule), and a web page can't close its tab.
+  const canExit = Platform.OS === 'android';
+  const confirmExit = () =>
+    Alert.alert(
+      'Exit Dart Scoreboard?',
+      current ? 'Your game in progress is saved. Tap Resume game next time to carry on.' : undefined,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Exit', style: 'destructive', onPress: () => BackHandler.exitApp() },
+      ],
+    );
   return (
     <Screen title="">
       <View style={styles.hero}>
@@ -38,6 +49,7 @@ export function HomeScreen({
         ) : null}
         <Button title="New game" onPress={onNewGame} variant={current ? 'secondary' : 'primary'} />
         <Button title="History & stats" onPress={onHistory} variant="secondary" />
+        {canExit ? <Button title="Exit app" onPress={confirmExit} variant="ghost" /> : null}
       </View>
     </Screen>
   );

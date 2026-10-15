@@ -153,6 +153,7 @@ refer to this repository's `main` branch.
 | (tap-to-pass PR) | Version 1.1.0: tap the next side of the scoreboard to end the turn, like the ✓ key (x01 commits a typed total or scores 0 for the darts left). |
 | (cricket-center PR) | Cricket with two sides: numbers column in the middle, one side's marks and score either side (part of 1.1.0). |
 | (cricket-lines PR) | Cricket: chalk line between rows; mark cells stretch to the row so the active column's highlight is unbroken (part of 1.1.0). |
+| (exit-app PR) | Home screen "Exit app" button (Android only), with a confirmation that notes a game in progress stays saved (part of 1.1.0). |
 | (iOS support PR) | iOS target: export-compliance flag, `expo-system-ui` for the dark root view, keyboard-safe setup screen, GitHub Actions (checks + macOS simulator build), `docs/APP_STORE.md`. |
 
 ## 5. Bugs, causes, and lessons
@@ -331,6 +332,10 @@ upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
 - 2026-10-15: Cricket numbers moved to the centre for two-sided games;
   rides along in 1.1.0 (no extra version bump).
 - 2026-10-15: Chalk lines between the Cricket rows; also in 1.1.0.
+- 2026-10-15: Exit app button on the home screen (Android only: Apple
+  rejects iOS apps that quit themselves, and the web can't close its tab);
+  also in 1.1.0. Calls `BackHandler.exitApp()`, the same as Back on the
+  home screen; the current game is already saved after every dart.
 - 2026-10-15: iOS target added (bundle ID `com.wolfyspub.dartscoreboard`,
   iPad supported). Simulator build compiles in CI. Next: Apple Developer
   Program enrolment (individual vs organization decides the seller name),
