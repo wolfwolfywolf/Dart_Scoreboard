@@ -1,8 +1,12 @@
 # Dart Scoreboard — Privacy Policy
 
-_Last updated: 14 October 2026_
+_Last updated: 15 October 2026_
 
-Dart Scoreboard is a scorekeeping app for darts, published by WolfysPub.com.
+This file mirrors the published policy at
+https://wolfyspub.com/dart-scoreboard/privacy
+(`site/dart-scoreboard/privacy/index.html`). Change both together.
+
+Dart Scoreboard is a scorekeeping app for darts, published by WolfysPub Games.
 
 ## What the app collects
 
@@ -24,8 +28,10 @@ its storage in your device settings deletes it.
 
 ## Permissions
 
-The app requests no permissions. It does not use the camera, microphone,
-location, contacts, or network.
+The app asks for no permissions. It does not use the camera, microphone,
+location, contacts, storage, or network. Android lists the standard
+internet permission that every app built with React Native carries;
+Dart Scoreboard never uses it.
 
 ## Children
 
@@ -38,4 +44,5 @@ and the date above will be updated.
 
 ## Contact
 
-Questions about this policy: see the contact details on WolfysPub.com.
+Questions about this policy: email support@wolfyspub.com or see the
+[support page](https://wolfyspub.com/dart-scoreboard/support).
