@@ -149,7 +149,7 @@ refer to this repository's `main` branch.
 | `b5204d0`, `4eb9345`, `3d45b7e`, `5e7224d` | WolfysPub.com site in `site/` (landing, privacy, support); support email; pages as folders for clean URLs. |
 | `bc5bb09` | Linked to EAS (`extra.eas.projectId`). |
 | `e9858f9`, `982cb22` | Submission status logged; project `CLAUDE.md`. |
-| (launch follow-ups PR) | Launch follow-ups: unused template permissions blocked, `npm run version:bump`, update and release-notes process in `docs/PLAY_STORE.md`, privacy policy copies brought in line. |
+| (launch follow-ups PR) | Launch follow-ups: unused template permissions blocked, `npm run version:bump`, update and release-notes process in `docs/PLAY_STORE.md`, Markdown privacy policy matched to the published page. |
 
 ## 5. Bugs, causes, and lessons
 
@@ -286,8 +286,8 @@ upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
   access, then swap the Google Play "coming soon" badge on the website for
   the store link.
 - 2026-10-15: Launch follow-ups (blocked unused
-  permissions, version bump script, release notes section, privacy policy
-  wording). The blocked permissions take effect from the next production
+  permissions, version bump script, release notes section). The website
+  stays unchanged until Play approves the app. The blocked permissions take effect from the next production
   build; the bundle under review still declares them.
 
 ## 9. Ideas not yet built

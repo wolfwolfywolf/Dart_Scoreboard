@@ -15,7 +15,7 @@ The running record is in `docs/DEVELOPMENT_LOG.md` §8.
 | Permanent Android package name `com.wolfyspub.dartscoreboard` | `app.json` |
 | EAS build profiles (`preview` = sideloadable APK, `production` = store bundle, auto-incrementing version code) | `eas.json` |
 | Unused permissions stripped from the bundle (`blockedPermissions`), so the store lists none beyond internet access | `app.json` |
-| Privacy policy, published at https://wolfyspub.com/dart-scoreboard/privacy | `site/dart-scoreboard/privacy/index.html` (copy in `docs/PRIVACY_POLICY.md`) |
+| Privacy policy, published at https://wolfyspub.com/dart-scoreboard/privacy | `site/dart-scoreboard/privacy/index.html` (copy in `docs/PRIVACY_POLICY.md`; change both together) |
 | Store listing text and release notes | below |
 | 512×512 store icon and 1024×500 feature graphic | `store/` |
 | Version bump script | `npm run version:bump` (see [Updates](#updates)) |

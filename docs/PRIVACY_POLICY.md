@@ -1,6 +1,6 @@
 # Dart Scoreboard — Privacy Policy
 
-_Last updated: 15 October 2026_
+_Last updated: 14 October 2026_
 
 This file mirrors the published policy at
 https://wolfyspub.com/dart-scoreboard/privacy
@@ -28,10 +28,8 @@ its storage in your device settings deletes it.
 
 ## Permissions
 
-The app asks for no permissions. It does not use the camera, microphone,
-location, contacts, storage, or network. Android lists the standard
-internet permission that every app built with React Native carries;
-Dart Scoreboard never uses it.
+The app requests no permissions. It does not use the camera, microphone,
+location, contacts, or network.
 
 ## Children
 
@@ -44,5 +42,5 @@ and the date above will be updated.
 
 ## Contact
 
-Questions about this policy: email support@wolfyspub.com or see the
+Questions about this policy: see the
 [support page](https://wolfyspub.com/dart-scoreboard/support).
