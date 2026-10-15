@@ -150,6 +150,7 @@ refer to this repository's `main` branch.
 | `bc5bb09` | Linked to EAS (`extra.eas.projectId`). |
 | `e9858f9`, `982cb22` | Submission status logged; project `CLAUDE.md`. |
 | (launch follow-ups PR) | Launch follow-ups: unused template permissions blocked, `npm run version:bump`, update and release-notes process in `docs/PLAY_STORE.md`, Markdown privacy policy matched to the published page. |
+| (tap-to-pass PR) | Version 1.1.0: tap the next side of the scoreboard to end the turn, like the ✓ key (x01 commits a typed total or scores 0 for the darts left). |
 
 ## 5. Bugs, causes, and lessons
 
@@ -209,6 +210,13 @@ refer to this repository's `main` branch.
   arrow. Marks per round is *not* shown on the board (only in stats).
 - Under the cards: three dart slots for the current turn and "X to throw"
   on the right, on every game screen.
+- Tapping the side of whoever throws next (their x01/Shanghai card, or
+  anywhere in their Cricket column) ends the current turn exactly as ✓
+  would: darts entered stand, the rest are misses. x01 has no ✓ key, so
+  there it enters the typed total if Turn total has one, else a `total: 0`
+  event (no new event type, so older history still replays). Tapping the
+  active side, or anyone else in a 3+ player game, does nothing, so a
+  stray tap can't skip a player; Undo reverses a pass like any entry.
 - Landscape on a wide screen: scoreboard left, keypad right (fixed width
   360–460). Portrait tablets: stacked, centred, max width 720.
 - Names: long-press to edit or delete; renaming in a game also fixes the
@@ -289,6 +297,8 @@ upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
   permissions, version bump script, release notes section). The website
   stays unchanged until Play approves the app. The blocked permissions take effect from the next production
   build; the bundle under review still declares them.
+- 2026-10-15: Version 1.1.0 prepared (tap the next side to end the turn);
+  release notes in `docs/PLAY_STORE.md`. Not built or uploaded yet.
 
 ## 9. Ideas not yet built
 

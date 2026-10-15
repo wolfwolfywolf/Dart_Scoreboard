@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Modal, StyleSheet, Text, View } from 'react-native';
+import { Alert, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { CricketEvent, CricketGame, Multiplier } from '../types';
 import { CRICKET_NUMBERS, replayCricket } from '../game/cricket';
@@ -43,6 +43,21 @@ export function CricketGameScreen({
 
   const onDart = (v: number, m: Multiplier) => onEvent({ t: 'dart', v, m });
 
+  // Tapping anywhere in the column of whoever throws next ends this turn, the same as the ✓ key.
+  const n = setup.players.length;
+  const next = (p + 1) % n;
+  const canPass = !state.finished && n > 1;
+  const passTurn = () => onEvent({ t: 'endTurn' });
+  const passProps = (i: number, name: string) => {
+    const passTo = canPass && i === next;
+    return {
+      onPress: passTurn,
+      disabled: !passTo,
+      accessibilityRole: passTo ? ('button' as const) : undefined,
+      accessibilityLabel: passTo ? `End turn, ${name} to throw` : undefined,
+    };
+  };
+
   const { width, height, isWide, twoPane } = useLayout();
   const insets = useSafeAreaInsets();
   const [boardH, setBoardH] = useState<number | null>(null);
@@ -65,12 +80,12 @@ export function CricketGameScreen({
         <View style={styles.row}>
           <View style={styles.numberCell} />
           {setup.players.map((pl, i) => (
-            <View key={pl.id} style={[styles.playerCell, i === p && !state.finished && styles.activeCol]}>
+            <Pressable key={pl.id} {...passProps(i, pl.name)} style={[styles.playerCell, i === p && !state.finished && styles.activeCol]}>
               <Text style={[styles.playerName, i === p && { color: chalk.yellow }]} numberOfLines={1}>
                 {pl.name}
               </Text>
               {withPoints ? <Text style={styles.points}>{state.points[i]}</Text> : null}
-            </View>
+            </Pressable>
           ))}
         </View>
         {CRICKET_NUMBERS.map((n, idx) => {
@@ -90,11 +105,15 @@ export function CricketGameScreen({
                 </Text>
               </View>
               {setup.players.map((pl, i) => (
-                <View key={pl.id} style={[styles.markCell, tall && styles.cellTall, i === p && !state.finished && styles.activeCol]}>
+                <Pressable
+                  key={pl.id}
+                  {...passProps(i, pl.name)}
+                  style={[styles.markCell, tall && styles.cellTall, i === p && !state.finished && styles.activeCol]}
+                >
                   <Text style={[styles.mark, tall && { fontSize: markSize + 4, minHeight: 0 }, state.marks[i][idx] >= 3 && { color: chalk.yellow }]}>
                     {MARK_GLYPH[Math.min(state.marks[i][idx], 3)]}
                   </Text>
-                </View>
+                </Pressable>
               ))}
             </View>
           );

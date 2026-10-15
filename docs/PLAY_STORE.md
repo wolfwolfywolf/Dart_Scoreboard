@@ -141,6 +141,14 @@ bundle was uploaded that EAS didn't build), read the current value with
 Play Console's "Release notes" box (per language, 500 characters max).
 Keep each version's text here so the history lives with the code.
 
+### 1.1.0 (not built yet)
+
+```
+New: tap the other player's or team's side of the scoreboard to end the
+current turn, just like the check button. Darts already entered still
+count. Works in 301/501/701, Cricket and Shanghai.
+```
+
 ### 1.0.0 (version code 2), 2026-10-15
 
 _First release. The text entered in Play Console was not copied here;
