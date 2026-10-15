@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Modal, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Multiplier, ShanghaiEvent, ShanghaiGame } from '../types';
 import { dartLabel, isTeam } from '../game/darts';
@@ -52,6 +52,11 @@ export function ShanghaiGameScreen({
 
   const onDart = (v: number, m: Multiplier) => onEvent({ t: 'dart', v, m });
 
+  // Tapping the card of whoever throws next ends this turn, the same as the ✓ key.
+  const next = (p + 1) % n;
+  const canPass = !state.finished && n > 1;
+  const passTurn = () => onEvent({ t: 'endTurn' });
+
   const confirmEnd = () =>
     Alert.alert('End game?', 'This game will be discarded and not saved to history.', [
       { text: 'Keep playing', style: 'cancel' },
@@ -68,8 +73,16 @@ export function ShanghaiGameScreen({
                 const pl = setup.players[i];
                 const active = i === p && !state.finished;
                 const thisRound = active ? state.turnScore : state.roundScores[i][state.round];
+                const passTo = canPass && i === next;
                 return (
-                  <View key={pl.id} style={[styles.card, active && styles.cardActive, compact && styles.cardCompact]}>
+                  <Pressable
+                    key={pl.id}
+                    onPress={passTurn}
+                    disabled={!passTo}
+                    accessibilityRole={passTo ? 'button' : undefined}
+                    accessibilityLabel={passTo ? `End turn, ${pl.name} to throw` : undefined}
+                    style={[styles.card, active && styles.cardActive, compact && styles.cardCompact]}
+                  >
                     <Text style={[styles.name, compact && styles.nameCompact, active && { color: chalk.yellow }]} numberOfLines={1}>
                       {pl.name}
                     </Text>
@@ -88,7 +101,7 @@ export function ShanghaiGameScreen({
                       </View>
                     ) : null}
                     <Text style={styles.sub}>{thisRound === undefined ? ' ' : `this round ${thisRound}`}</Text>
-                  </View>
+                  </Pressable>
                 );
               })}
             </View>

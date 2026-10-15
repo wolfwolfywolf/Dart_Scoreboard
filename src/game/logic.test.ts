@@ -114,6 +114,22 @@ test('x01: total entry, checkout dart count and legs', () => {
   assert.equal(st.turns[0].bust, true);
 });
 
+test('x01: passing the turn (tapping the next side) is a total of 0 for the darts left', () => {
+  // Nothing entered: a turn of three darts scoring 0, Bob to throw.
+  let st = replayX01(setup501, [{ t: 'total', total: 0 }]);
+  assert.equal(st.currentPlayer, 1);
+  assert.equal(st.scores[0], 501);
+  assert.equal(st.stats[0].dartsThrown, 3);
+  assert.equal(st.turns[0].bust, false);
+  // One dart entered, then passed: the 60 stands and the turn still counts three darts.
+  st = replayX01(setup501, [d(20, 3), { t: 'total', total: 0 }]);
+  assert.equal(st.currentPlayer, 1);
+  assert.equal(st.scores[0], 441);
+  assert.equal(st.stats[0].dartsThrown, 3);
+  assert.equal(st.turns[0].scored, 60);
+  assert.equal(threeDartAverage(st.stats[0]), 60);
+});
+
 test('x01: undo is dropping the last event', () => {
   const events = [d(20, 3), d(20, 3), d(20, 3), d(20, 3)];
   const before = replayX01(setup501, events.slice(0, 3));
