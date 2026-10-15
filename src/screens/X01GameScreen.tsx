@@ -8,6 +8,7 @@ import { possibleFinishDartCounts, replayX01, threeDartAverage } from '../game/x
 import { DartKeypad } from '../components/DartKeypad';
 import { TotalKeypad } from '../components/TotalKeypad';
 import { X01StatsTable } from '../components/Stats';
+import { RulesScreen } from './RulesScreen';
 import { Button, Screen, Segmented } from '../components/ui';
 import { CheckoutChartScreen } from './CheckoutChartScreen';
 import { keyHeightFor, useLayout } from '../layout';
@@ -36,6 +37,7 @@ export function X01GameScreen({
   const { setup } = game;
   const state = useMemo(() => replayX01(setup, game.events), [setup, game.events]);
   const [mode, setMode] = useState<'dart' | 'total'>('dart');
+  const [showRules, setShowRules] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalEntry, setTotalEntry] = useState('');
   const [pendingFinish, setPendingFinish] = useState<{ total: number; counts: number[] } | null>(null);
@@ -270,8 +272,10 @@ export function X01GameScreen({
     </View>
   );
 
+  if (showRules) return <RulesScreen initial="x01" onClose={() => setShowRules(false)} />;
+
   return (
-    <Screen title={title} onBack={onBack} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />} fullWidth={twoPane}>
+    <Screen title={title} onBack={onBack} onInfo={() => setShowRules(true)} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />} fullWidth={twoPane}>
       {twoPane ? (
         <View style={styles.panes}>
           {scoreboard}

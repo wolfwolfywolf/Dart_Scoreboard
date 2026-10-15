@@ -6,6 +6,7 @@ import { CRICKET_NUMBERS, replayCricket } from '../game/cricket';
 import { dartLabel } from '../game/darts';
 import { DartKeypad } from '../components/DartKeypad';
 import { CricketStatsTable } from '../components/Stats';
+import { RulesScreen } from './RulesScreen';
 import { Button, Screen } from '../components/ui';
 import { keyHeightFor, useLayout } from '../layout';
 import { chalk, colors, fonts, radius, spacing } from '../theme';
@@ -66,6 +67,7 @@ export function CricketGameScreen({
   const { width, height, isWide, twoPane } = useLayout();
   const insets = useSafeAreaInsets();
   const [boardH, setBoardH] = useState<number | null>(null);
+  const [showRules, setShowRules] = useState(false);
   const keypadPaneWidth = Math.min(460, Math.max(360, width * 0.45));
   // Side by side: four keypad rows (multiplier + three of keys) centred beside a board
   // that stretches to fill the column. Stacked: the board keeps its natural height and
@@ -157,8 +159,10 @@ export function CricketGameScreen({
     </View>
   );
 
+  if (showRules) return <RulesScreen initial="cricket" onClose={() => setShowRules(false)} />;
+
   return (
-    <Screen title="Cricket" onBack={onBack} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />} fullWidth={twoPane}>
+    <Screen title="Cricket" onBack={onBack} onInfo={() => setShowRules(true)} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />} fullWidth={twoPane}>
       {twoPane ? (
         <View style={styles.panes}>
           {board}

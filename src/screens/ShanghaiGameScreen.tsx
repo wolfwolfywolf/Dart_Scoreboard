@@ -7,6 +7,7 @@ import { replayShanghai, shanghaiLabel } from '../game/shanghai';
 import { DartKeypad } from '../components/DartKeypad';
 import { ShanghaiStatsTable } from '../components/Stats';
 import { Chalkboard } from '../components/Chalkboard';
+import { RulesScreen } from './RulesScreen';
 import { Button, Screen } from '../components/ui';
 import { keyHeightFor, useLayout } from '../layout';
 import { chalk, colors, fonts, radius, spacing } from '../theme';
@@ -33,6 +34,7 @@ export function ShanghaiGameScreen({
   const { setup } = game;
   const state = useMemo(() => replayShanghai(setup, game.events), [setup, game.events]);
   const [scoreboardH, setScoreboardH] = useState<number | null>(null);
+  const [showRules, setShowRules] = useState(false);
 
   const p = state.currentPlayer;
   const target = setup.numbers[Math.min(state.round, setup.numbers.length - 1)];
@@ -157,8 +159,10 @@ export function ShanghaiGameScreen({
       ? `🎉 Shanghai on ${shanghaiLabel(state.shanghai.target)}s! ${winnerName} wins!`
       : `🏆 ${winnerName} wins!`;
 
+  if (showRules) return <RulesScreen initial="shanghai" onClose={() => setShowRules(false)} />;
+
   return (
-    <Screen title="Shanghai" onBack={onBack} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />} fullWidth={twoPane}>
+    <Screen title="Shanghai" onBack={onBack} onInfo={() => setShowRules(true)} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />} fullWidth={twoPane}>
       {twoPane ? (
         <View style={styles.panes}>
           {scoreboard}

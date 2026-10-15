@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { Game } from '../types';
 import { Button, Screen } from '../components/ui';
 import { colors, fonts } from '../theme';
+import { RulesScreen } from './RulesScreen';
 
 export function describeGame(game: Game): string {
   const names = game.setup.players.map((p) => p.name).join(' · ');
@@ -21,8 +22,10 @@ export function HomeScreen({
   onNewGame: () => void;
   onHistory: () => void;
 }) {
+  const [showRules, setShowRules] = useState(false);
+  if (showRules) return <RulesScreen onClose={() => setShowRules(false)} />;
   return (
-    <Screen title="">
+    <Screen title="" onInfo={() => setShowRules(true)}>
       <View style={styles.hero}>
         <Text style={styles.logo}>🎯</Text>
         <Text style={styles.title}>Dart Scoreboard</Text>
