@@ -23,7 +23,8 @@ refer to this repository's `main` branch.
    - 7.2 [Checks before pushing](#72-checks-before-pushing)
    - 7.3 [Visual verification without a device](#73-visual-verification-without-a-device)
    - 7.4 [Building installable apps](#74-building-installable-apps)
-8. [Ideas not yet built](#8-ideas-not-yet-built)
+8. [Release status](#8-release-status)
+9. [Ideas not yet built](#9-ideas-not-yet-built)
 
 ---
 
@@ -254,7 +255,22 @@ EAS Build (`eas build --platform android --profile preview` for an APK;
 you own first. Icons regenerate with `python3 scripts/make-icons.py`
 (needs Pillow).
 
-## 8. Ideas not yet built
+## 8. Release status
+
+- 2026-10-14: Google Play developer account created (personal, developer
+  name WOLFYSPUB GAMES). Website live at https://wolfyspub.com on Vercel
+  (Root Directory `site`); privacy policy at
+  https://wolfyspub.com/dart-scoreboard/privacy. EAS project linked
+  (`@wolfwolfywolf/dart-scoreboard`); first production bundle built with
+  an EAS-managed keystore, version code 2.
+- 2026-10-15: App created in Play Console as `com.wolfyspub.dartscoreboard`,
+  listing and questionnaires completed, bundle uploaded to Internal
+  testing with first-release notes. Awaiting Google's initial review.
+  Next: tester opt-in, closed test (12 testers / 14 days), production
+  access, then swap the "coming soon" badges on the website for the store
+  link.
+
+## 9. Ideas not yet built
 
 - Optional round-by-round view or a win/loss record per player across
   history.
