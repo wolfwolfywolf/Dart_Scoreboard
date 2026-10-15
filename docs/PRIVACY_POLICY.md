@@ -2,7 +2,11 @@
 
 _Last updated: 14 October 2026_
 
-Dart Scoreboard is a scorekeeping app for darts, published by WolfysPub.com.
+This file mirrors the published policy at
+https://wolfyspub.com/dart-scoreboard/privacy
+(`site/dart-scoreboard/privacy/index.html`). Change both together.
+
+Dart Scoreboard is a scorekeeping app for darts, published by WolfysPub Games.
 
 ## What the app collects
 
@@ -38,4 +42,5 @@ and the date above will be updated.
 
 ## Contact
 
-Questions about this policy: see the contact details on WolfysPub.com.
+Questions about this policy: see the
+[support page](https://wolfyspub.com/dart-scoreboard/support).
