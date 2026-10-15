@@ -153,6 +153,7 @@ refer to this repository's `main` branch.
 | (tap-to-pass PR) | Version 1.1.0: tap the next side of the scoreboard to end the turn, like the ✓ key (x01 commits a typed total or scores 0 for the darts left). |
 | (cricket-center PR) | Cricket with two sides: numbers column in the middle, one side's marks and score either side (part of 1.1.0). |
 | (cricket-lines PR) | Cricket: chalk line between rows; mark cells stretch to the row so the active column's highlight is unbroken (part of 1.1.0). |
+| (iOS support PR) | iOS target: export-compliance flag, `expo-system-ui` for the dark root view, keyboard-safe setup screen, GitHub Actions (checks + macOS simulator build), `docs/APP_STORE.md`. |
 
 ## 5. Bugs, causes, and lessons
 
@@ -192,6 +193,16 @@ refer to this repository's `main` branch.
   run `CI=1 npx expo prebuild --platform android --no-install` there and
   grep `uses-permission` in `android/app/src/main/AndroidManifest.xml`;
   only INTERNET should remain without `tools:node="remove"`.
+- **iOS doesn't resize for the keyboard.** The setup screen's add-player
+  field and the edit-player sheet were hidden behind it on small iPhones.
+  *Fix:* `automaticallyAdjustKeyboardInsets` on the setup ScrollView; the
+  sheet's backdrop is a `KeyboardAvoidingView` (`padding`, iOS only) holding
+  a ScrollView whose content is `flexGrow: 1` and centred, so in phone
+  landscape the sheet scrolls instead of running off the top. Checked with
+  `yoga-layout` at iPhone SE, iPhone 15, landscape and iPad sizes.
+- **White root view on iOS**: without `expo-system-ui`, `backgroundColor`
+  in `app.json` is ignored on iOS (prebuild warns), so a white edge shows
+  during rotation and keyboard animation.
 - **`npm audit fix --force` wrecked the install** (2026-10-14). It
   "fixed" audit warnings by downgrading Expo 57 → 44 and React Native
   0.86 → 0.72, which cannot run the app. Recovery:
@@ -259,6 +270,16 @@ npm test
 npx expo export --platform android --output-dir /tmp/export   # bundles with Metro
 ```
 
+GitHub Actions runs the same three plus an iOS bundle on every PR and push
+to `main` (`.github/workflows/checks.yml`). `.github/workflows/ios-build.yml`
+generates `ios/` and compiles an unsigned Release build for the iOS
+Simulator on a macOS runner; it runs only when `app.json`, `eas.json`,
+`package*.json`, `assets/` or the workflow change (macOS minutes cost 10×),
+or by hand from the Actions tab. To check the generated iOS project
+locally on Linux: `npx expo prebuild --platform ios --no-install` in a
+scratch copy (it writes `ios/` and edits nothing tracked except, at most,
+`package.json` scripts).
+
 For any new layout structure, sanity-check the flex tree with the Yoga
 engine (`yoga-layout` from npm) rather than trusting a browser render.
 
@@ -274,6 +295,8 @@ substitute for native (see §5).
 
 The public website (landing page, privacy policy, support) lives in
 `site/` and deploys to Vercel with Root Directory `site`.
+App Store publishing is in `docs/APP_STORE.md` (no Mac needed: EAS builds
+and signs in the cloud; needs an Apple Developer account).
 Play Store publishing is covered step by step in `docs/PLAY_STORE.md`
 (package name `com.wolfyspub.dartscoreboard`, `eas.json` profiles, privacy
 policy in `docs/PRIVACY_POLICY.md`, store graphics in `store/`).
@@ -308,6 +331,10 @@ upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
 - 2026-10-15: Cricket numbers moved to the centre for two-sided games;
   rides along in 1.1.0 (no extra version bump).
 - 2026-10-15: Chalk lines between the Cricket rows; also in 1.1.0.
+- 2026-10-15: iOS target added (bundle ID `com.wolfyspub.dartscoreboard`,
+  iPad supported). Simulator build compiles in CI. Next: Apple Developer
+  Program enrolment (individual vs organization decides the seller name),
+  then the steps in `docs/APP_STORE.md`.
 
 ## 9. Ideas not yet built
 

@@ -61,7 +61,8 @@ eas build --platform ios                             # needs an Apple Developer 
 ```
 
 See `docs/PLAY_STORE.md` for the Google Play checklist, releasing updates
-(`npm run version:bump`) and the store listing text.
+(`npm run version:bump`) and the store listing text, and `docs/APP_STORE.md`
+for the App Store (no Mac needed).
 
 ## Development
 

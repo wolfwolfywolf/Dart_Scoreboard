@@ -1,0 +1,24 @@
+name: Checks
+
+# The repo's pre-push checks, plus an iOS bundle so JS that only breaks on iOS is caught.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npx expo export --platform android --output-dir /tmp/export-android
+      - run: npx expo export --platform ios --output-dir /tmp/export-ios
