@@ -59,7 +59,8 @@ eas build --platform android --profile preview   # .apk you can sideload
 eas build --platform ios                          # needs an Apple Developer account
 ```
 
-See `docs/PLAY_STORE.md` for the full Google Play checklist.
+See `docs/PLAY_STORE.md` for the full Google Play checklist and
+`docs/APP_STORE.md` for the App Store (no Mac needed).
 
 ## Development
 

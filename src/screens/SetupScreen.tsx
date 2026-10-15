@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { CricketScoring, GameSetup, Player } from '../types';
 import { shanghaiLabel } from '../game/shanghai';
 import { isTeam, newId } from '../game/darts';
@@ -103,7 +103,7 @@ export function SetupScreen({
 
   return (
     <Screen title="New game" onBack={onBack} scroll>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
         <Label>Game</Label>
         <Segmented
           options={[
@@ -251,29 +251,32 @@ export function SetupScreen({
       </ScrollView>
 
       <Modal visible={editing !== null} transparent animationType="fade" onRequestClose={() => setEditing(null)}>
-        <View style={styles.backdrop}>
-          <View style={styles.sheet}>
-            <Text style={styles.sheetTitle}>Edit player</Text>
-            <TextInput
-              value={editName}
-              onChangeText={setEditName}
-              style={[styles.input, styles.inputBlock]}
-              autoFocus
-              autoCapitalize="words"
-              returnKeyType="done"
-              onSubmitEditing={applyRename}
-              placeholder="Name"
-              placeholderTextColor={colors.muted}
-            />
-            <Button title="Save" onPress={applyRename} disabled={!editName.trim()} />
-            <Button
-              title={editing?.where === 'game' ? 'Remove from this game' : 'Forget this name'}
-              variant="danger"
-              onPress={applyDelete}
-            />
-            <Button title="Cancel" variant="ghost" onPress={() => setEditing(null)} />
-          </View>
-        </View>
+        {/* iOS doesn't resize for the keyboard, so lift the sheet clear of it; scroll when it can't fit (phone landscape). */}
+        <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <ScrollView contentContainerStyle={styles.backdropContent} keyboardShouldPersistTaps="handled">
+            <View style={styles.sheet}>
+              <Text style={styles.sheetTitle}>Edit player</Text>
+              <TextInput
+                value={editName}
+                onChangeText={setEditName}
+                style={[styles.input, styles.inputBlock]}
+                autoFocus
+                autoCapitalize="words"
+                returnKeyType="done"
+                onSubmitEditing={applyRename}
+                placeholder="Name"
+                placeholderTextColor={colors.muted}
+              />
+              <Button title="Save" onPress={applyRename} disabled={!editName.trim()} />
+              <Button
+                title={editing?.where === 'game' ? 'Remove from this game' : 'Forget this name'}
+                variant="danger"
+                onPress={applyDelete}
+              />
+              <Button title="Cancel" variant="ghost" onPress={() => setEditing(null)} />
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </Modal>
     </Screen>
   );
@@ -322,7 +325,8 @@ const styles = StyleSheet.create({
   },
   numberKeyOn: { backgroundColor: colors.accent, borderColor: colors.accent },
   numberKeyText: { color: colors.text, fontSize: 16, fontWeight: '700' },
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)' },
+  backdropContent: { flexGrow: 1, justifyContent: 'center', padding: 16 },
   sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 10 },
   sheetTitle: { color: colors.text, fontSize: 20, fontWeight: '800', textAlign: 'center' },
   hint: { color: colors.muted, marginTop: 12, marginBottom: 8, lineHeight: 20 },

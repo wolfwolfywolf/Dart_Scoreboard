@@ -1,0 +1,63 @@
+name: iOS build
+
+# Generates the native iOS project and compiles a Release build for the simulator,
+# unsigned, to prove the iOS target builds without a Mac of our own. Signed store
+# builds come from EAS (see docs/APP_STORE.md).
+#
+# macOS runner minutes are billed at 10x on private repos, so this runs only when
+# native configuration or dependencies change, or when started by hand from the
+# Actions tab (Run workflow).
+on:
+  pull_request:
+    paths:
+      - app.json
+      - eas.json
+      - package.json
+      - package-lock.json
+      - assets/**
+      - .github/workflows/ios-build.yml
+  push:
+    branches: [main]
+    paths:
+      - app.json
+      - eas.json
+      - package.json
+      - package-lock.json
+      - assets/**
+      - .github/workflows/ios-build.yml
+  workflow_dispatch:
+
+jobs:
+  simulator-build:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Generate ios/ and install pods
+        run: npx expo prebuild --platform ios --clean
+        env:
+          CI: 1
+      - name: Build (Release, iOS Simulator, unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild -version
+          xcodebuild \
+            -workspace ios/DartScoreboard.xcworkspace \
+            -scheme DartScoreboard \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            -quiet build
+      - name: Check the app bundle
+        run: |
+          app=build/Build/Products/Release-iphonesimulator/DartScoreboard.app
+          ls "$app"
+          test -f "$app/main.jsbundle"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Info.plist"

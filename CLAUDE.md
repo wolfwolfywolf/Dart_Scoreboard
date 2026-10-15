@@ -10,6 +10,7 @@ Read before changing anything:
   decision and bug so far, the development workflow, release status.
   Add to it in the same commit as any notable change.
 - `docs/PLAY_STORE.md`: how releases get to Google Play.
+- `docs/APP_STORE.md`: how releases get to the App Store (EAS, no Mac).
 
 Conventions that matter:
 
