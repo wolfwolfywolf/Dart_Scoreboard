@@ -144,6 +144,12 @@ refer to this repository's `main` branch.
 | `da4c49c` | Keypad labels never change with the multiplier (15 stays 15, Bull stays Bull). |
 | `91e7b6e` | Shanghai. |
 | `73a1863`, `82c0f3d` | Shanghai scoreboard tidied; "X to throw" line added for consistency. |
+| `8ad9ecb`, `cee684c` | This development log. |
+| `68453b1`, `8314b89` | Google Play prep: package `com.wolfyspub.dartscoreboard`, `eas.json`, privacy policy, listing text, store graphics; copy matched to the developer name WolfysPub Games. |
+| `b5204d0`, `4eb9345`, `3d45b7e`, `5e7224d` | WolfysPub.com site in `site/` (landing, privacy, support); support email; pages as folders for clean URLs. |
+| `bc5bb09` | Linked to EAS (`extra.eas.projectId`). |
+| `e9858f9`, `982cb22` | Submission status logged; project `CLAUDE.md`. |
+| (launch follow-ups PR) | Launch follow-ups: unused template permissions blocked, `npm run version:bump`, update and release-notes process in `docs/PLAY_STORE.md`, Markdown privacy policy matched to the published page. |
 | (tap-to-pass PR) | Version 1.1.0: tap the next side of the scoreboard to end the turn, like the ✓ key (x01 commits a typed total or scores 0 for the darts left). |
 
 ## 5. Bugs, causes, and lessons
@@ -175,6 +181,15 @@ refer to this repository's `main` branch.
   (lower-case "the"). Custom fonts on Android must not be combined with
   `fontWeight`; use the family alone.
 - **Dashed borders** render badly on Android; use solid faint lines.
+- **`permissions: []` no longer strips template permissions** (found
+  2026-10-15, after the first upload). On SDK 57, `npx expo prebuild`
+  still emitted READ/WRITE_EXTERNAL_STORAGE, SYSTEM_ALERT_WINDOW and
+  VIBRATE, which the app never uses and which contradict the privacy
+  policy. *Fix:* list them in `android.blockedPermissions` (applies to
+  EAS builds, not Expo Go). *Check:* copy the repo to a scratch folder,
+  run `CI=1 npx expo prebuild --platform android --no-install` there and
+  grep `uses-permission` in `android/app/src/main/AndroidManifest.xml`;
+  only INTERNET should remain without `tools:node="remove"`.
 - **`npm audit fix --force` wrecked the install** (2026-10-14). It
   "fixed" audit warnings by downgrading Expo 57 → 44 and React Native
   0.86 → 0.72, which cannot run the app. Recovery:
@@ -258,10 +273,11 @@ Play Store publishing is covered step by step in `docs/PLAY_STORE.md`
 policy in `docs/PRIVACY_POLICY.md`, store graphics in `store/`).
 
 EAS Build (`eas build --platform android --profile preview` for an APK;
-`--platform ios` needs an Apple developer account). Change
-`ios.bundleIdentifier` / `android.package` in `app.json` to identifiers
-you own first. Icons regenerate with `python3 scripts/make-icons.py`
-(needs Pillow).
+`--platform ios` needs an Apple developer account). The identifiers
+`com.wolfyspub.dartscoreboard` in `app.json` are permanent. Releasing an
+update (version bump with `npm run version:bump`, release notes, build,
+upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
+`python3 scripts/make-icons.py` (needs Pillow).
 
 ## 8. Release status
 
@@ -275,8 +291,14 @@ you own first. Icons regenerate with `python3 scripts/make-icons.py`
   listing and questionnaires completed, bundle uploaded to Internal
   testing with first-release notes. Awaiting Google's initial review.
   Next: tester opt-in, closed test (12 testers / 14 days), production
-  access, then swap the "coming soon" badges on the website for the store
-  link.
+  access, then swap the Google Play "coming soon" badge on the website for
+  the store link.
+- 2026-10-15: Launch follow-ups (blocked unused
+  permissions, version bump script, release notes section). The website
+  stays unchanged until Play approves the app. The blocked permissions take effect from the next production
+  build; the bundle under review still declares them.
+- 2026-10-15: Version 1.1.0 prepared (tap the next side to end the turn);
+  release notes in `docs/PLAY_STORE.md`. Not built or uploaded yet.
 
 ## 9. Ideas not yet built
 

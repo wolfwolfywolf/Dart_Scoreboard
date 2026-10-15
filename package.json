@@ -28,7 +28,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "test": "tsx --test src/**/*.test.ts",
-    "typecheck": "tsc --noEmit -p ."
+    "typecheck": "tsc --noEmit -p .",
+    "version:bump": "node scripts/bump-version.mjs"
   },
   "private": true
 }
