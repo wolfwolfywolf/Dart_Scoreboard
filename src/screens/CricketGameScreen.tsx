@@ -98,9 +98,9 @@ export function CricketGameScreen({
         {CRICKET_NUMBERS.map((n, idx) => {
           const dead = state.marks.every((row) => row[idx] >= 3);
           return (
-            <View key={n} style={[styles.row, tall && { flex: 1, alignItems: 'stretch' }]}>
+            <View key={n} style={[styles.row, styles.numberRow, tall && { flex: 1 }]}>
               {arrange(
-                <View key="num" style={[styles.numberCell, tall && { justifyContent: 'center' }]}>
+                <View key="num" style={[styles.numberCell, styles.cellCentered]}>
                   <Text
                     style={[
                       styles.number,
@@ -116,7 +116,7 @@ export function CricketGameScreen({
                   <Pressable
                     key={pl.id}
                     {...passProps(i, pl.name)}
-                    style={[styles.markCell, tall && styles.cellTall, i === p && !state.finished && styles.activeCol]}
+                    style={[styles.markCell, i === p && !state.finished && styles.activeCol]}
                   >
                     <Text style={[styles.mark, tall && { fontSize: markSize + 4, minHeight: 0 }, state.marks[i][idx] >= 3 && { color: chalk.yellow }]}>
                       {MARK_GLYPH[Math.min(state.marks[i][idx], 3)]}
@@ -192,13 +192,16 @@ const styles = StyleSheet.create({
   board: { padding: 6 },
   boardTall: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center' },
+  // A chalk line above every number row separates the rows; cells stretch to the lines so
+  // the active column's highlight is unbroken.
+  numberRow: { alignItems: 'stretch', borderTopWidth: 1.5, borderTopColor: chalk.line },
   numberCell: { width: 62, alignItems: 'center', paddingVertical: 4 },
+  cellCentered: { justifyContent: 'center' },
   number: { color: chalk.white, fontSize: 20, fontFamily: fonts.chalk },
   playerCell: { flex: 1, alignItems: 'center', paddingVertical: 6, borderRadius: 6 },
   playerName: { color: chalk.white, fontFamily: fonts.chalkHand, fontSize: 16 },
   points: { color: chalk.white, fontSize: 26, fontFamily: fonts.chalk },
-  markCell: { flex: 1, alignItems: 'center', paddingVertical: 4 },
-  cellTall: { justifyContent: 'center', alignSelf: 'stretch' },
+  markCell: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 4 },
   activeCol: { backgroundColor: chalk.highlight },
   mark: { color: chalk.white, fontSize: 22, fontFamily: fonts.chalkHand, minHeight: 28 },
   turnDarts: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
