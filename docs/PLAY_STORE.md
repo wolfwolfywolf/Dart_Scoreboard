@@ -148,7 +148,8 @@ New: tap the other player's or team's side of the scoreboard to end the
 current turn, just like the check button. Darts already entered still
 count. Works in 301/501/701, Cricket and Shanghai.
 Cricket with two players or teams now shows the numbers down the middle,
-with one side's marks and score on each side.
+with one side's marks and score on each side, and chalk lines now
+separate the rows.
 ```
 
 ### 1.0.0 (version code 2), 2026-10-15

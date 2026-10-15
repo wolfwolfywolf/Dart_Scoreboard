@@ -152,6 +152,7 @@ refer to this repository's `main` branch.
 | (launch follow-ups PR) | Launch follow-ups: unused template permissions blocked, `npm run version:bump`, update and release-notes process in `docs/PLAY_STORE.md`, Markdown privacy policy matched to the published page. |
 | (tap-to-pass PR) | Version 1.1.0: tap the next side of the scoreboard to end the turn, like the ✓ key (x01 commits a typed total or scores 0 for the darts left). |
 | (cricket-center PR) | Cricket with two sides: numbers column in the middle, one side's marks and score either side (part of 1.1.0). |
+| (cricket-lines PR) | Cricket: chalk line between rows; mark cells stretch to the row so the active column's highlight is unbroken (part of 1.1.0). |
 
 ## 5. Bugs, causes, and lessons
 
@@ -209,7 +210,8 @@ refer to this repository's `main` branch.
   3 in a compact row, 4+ in rows of two. Cricket: chalkboard grid; with
   two players or teams the numbers (20 down to Bull) run down the middle
   with one side's column left and the other right, with 3+ the numbers are
-  on the left and every column follows. Active
+  on the left and every column follows. A chalk line (`chalk.line`)
+  separates the number rows. Active
   player/team in yellow chalk; in doubles the teammate on the oche has an
   arrow. Marks per round is *not* shown on the board (only in stats).
 - Under the cards: three dart slots for the current turn and "X to throw"
@@ -305,6 +307,7 @@ upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
   release notes in `docs/PLAY_STORE.md`. Not built or uploaded yet.
 - 2026-10-15: Cricket numbers moved to the centre for two-sided games;
   rides along in 1.1.0 (no extra version bump).
+- 2026-10-15: Chalk lines between the Cricket rows; also in 1.1.0.
 
 ## 9. Ideas not yet built
 
