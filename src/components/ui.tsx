@@ -58,20 +58,25 @@ export function Screen({
   children,
   scroll,
   fullWidth,
+  onInfo,
 }: {
   title: string;
   onBack?: () => void;
   right?: React.ReactNode;
+  /** Shows a round "i" button at the right of the header that opens the rules. */
+  onInfo?: () => void;
   children: React.ReactNode;
   scroll?: boolean;
   /** Use the whole width on tablets instead of centring a phone-width column. */
   fullWidth?: boolean;
 }) {
   const insets = useSafeAreaInsets();
+  // Both sides share a width so the title stays centred; the info button needs a little more.
+  const side = onInfo ? styles.headerSideWide : null;
   return (
     <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <View style={styles.header}>
-        <View style={styles.headerSide}>
+        <View style={[styles.headerSide, side]}>
           {onBack ? (
             <Pressable onPress={onBack} hitSlop={12} style={({ pressed }) => pressed && { opacity: 0.6 }}>
               <Text style={styles.back}>‹ Back</Text>
@@ -81,10 +86,28 @@ export function Screen({
         <Text style={styles.title} numberOfLines={1}>
           {title}
         </Text>
-        <View style={[styles.headerSide, { alignItems: 'flex-end' }]}>{right}</View>
+        <View style={[styles.headerSide, side, styles.headerRight]}>
+          {onInfo ? <InfoButton onPress={onInfo} /> : null}
+          {right}
+        </View>
       </View>
       <View style={[styles.body, scroll && { padding: 0 }, !fullWidth && styles.bodyCapped]}>{children}</View>
     </View>
+  );
+}
+
+/** A small round "i" that opens the rules. */
+export function InfoButton({ onPress }: { onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={10}
+      accessibilityRole="button"
+      accessibilityLabel="Rules"
+      style={({ pressed }) => [styles.info, pressed && { opacity: 0.6 }]}
+    >
+      <Text style={styles.infoText}>i</Text>
+    </Pressable>
   );
 }
 
@@ -147,6 +170,18 @@ const styles = StyleSheet.create({
     height: 52,
   },
   headerSide: { width: 72 },
+  headerSideWide: { width: 108 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4 },
+  info: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 2,
+    borderColor: colors.muted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoText: { color: colors.muted, fontSize: 17, fontWeight: '800', fontStyle: 'italic', lineHeight: 20 },
   back: { color: colors.accent, fontSize: 18, fontWeight: '600' },
   title: { flex: 1, textAlign: 'center', color: colors.text, fontSize: 20, fontWeight: '700' },
   body: { flex: 1, padding: spacing },

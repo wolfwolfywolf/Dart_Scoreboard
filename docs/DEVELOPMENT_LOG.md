@@ -153,6 +153,8 @@ refer to this repository's `main` branch.
 | (tap-to-pass PR) | Version 1.1.0: tap the next side of the scoreboard to end the turn, like the ✓ key (x01 commits a typed total or scores 0 for the darts left). |
 | (cricket-center PR) | Cricket with two sides: numbers column in the middle, one side's marks and score either side (part of 1.1.0). |
 | (cricket-lines PR) | Cricket: chalk line between rows; mark cells stretch to the row so the active column's highlight is unbroken (part of 1.1.0). |
+| (rules PR) | Rules screen: a round "i" in the header of the home, setup and game screens opens how each game is played and scored (Basics, x01, Cricket, Shanghai tabs), on the current game's tab (part of 1.1.0). |
+| (rules PR, 2nd commit) | Bigger "X to throw" on every game, above the keypad on tablet landscape; border around the active Cricket column (part of 1.1.0). |
 | (exit-app PR) | Home screen "Exit app" button (Android only), with a confirmation that notes a game in progress stays saved (part of 1.1.0). |
 | (iOS support PR) | iOS target: export-compliance flag, `expo-system-ui` for the dark root view, keyboard-safe setup screen, GitHub Actions (checks + macOS simulator build), `docs/APP_STORE.md`. |
 
@@ -226,8 +228,16 @@ refer to this repository's `main` branch.
   separates the number rows. Active
   player/team in yellow chalk; in doubles the teammate on the oche has an
   arrow. Marks per round is *not* shown on the board (only in stats).
-- Under the cards: three dart slots for the current turn and "X to throw"
-  on the right, on every game screen.
+- Under the cards: three dart slots for the current turn, then "X to throw"
+  (`ThrowerLabel`, name large) on its own line; x01 puts the last turn's
+  result to its right. Side by side (tablet landscape) the label moves to
+  the keypad pane, large and centred directly above the keys, and the key
+  sizing reserves `THROWER_LABEL_LARGE_HEIGHT` for it.
+- Cricket: the side that's up gets a yellow chalk border around its whole
+  column, like the active x01/Shanghai card. The column is a stack of row
+  cells, so the border is one absolutely positioned overlay placed from the
+  measured heading cell (`onLayout`), not per-cell borders (which would
+  break at every row line).
 - Tapping the side of whoever throws next (their x01/Shanghai card, or
   anywhere in their Cricket column) ends the current turn exactly as ✓
   would: darts entered stand, the rest are misses. x01 has no ✓ key, so
@@ -237,6 +247,11 @@ refer to this repository's `main` branch.
   stray tap can't skip a player; Undo reverses a pass like any entry.
 - Landscape on a wide screen: scoreboard left, keypad right (fixed width
   360–460). Portrait tablets: stacked, centred, max width 720.
+- Rules: the round "i" button (`InfoButton`, via `Screen`'s `onInfo`) on
+  the home, setup and game screens opens `RulesScreen`, on the tab for the
+  game in hand. It is shown in place of the screen (like the checkout chart)
+  so the game screen keeps its state; Android back closes it. The text in
+  `RulesScreen.tsx` must follow §3 and `src/game/*.ts` when a rule changes.
 - Names: long-press to edit or delete; renaming in a game also fixes the
   remembered name.
 
@@ -332,6 +347,9 @@ upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
 - 2026-10-15: Cricket numbers moved to the centre for two-sided games;
   rides along in 1.1.0 (no extra version bump).
 - 2026-10-15: Chalk lines between the Cricket rows; also in 1.1.0.
+- 2026-10-15: Rules screen (the "i" button); also in 1.1.0.
+- 2026-10-16: Bigger thrower name and the Cricket active-column border,
+  from testing on a tablet in landscape; also in 1.1.0.
 - 2026-10-15: Exit app button on the home screen (Android only: Apple
   rejects iOS apps that quit themselves, and the web can't close its tab);
   also in 1.1.0. Calls `BackHandler.exitApp()`, the same as Back on the

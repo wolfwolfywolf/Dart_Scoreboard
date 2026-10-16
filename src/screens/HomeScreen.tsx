@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Alert, BackHandler, Platform, StyleSheet, Text, View } from 'react-native';
 import type { Game } from '../types';
 import { Button, Screen } from '../components/ui';
 import { colors, fonts } from '../theme';
+import { RulesScreen } from './RulesScreen';
 
 export function describeGame(game: Game): string {
   const names = game.setup.players.map((p) => p.name).join(' · ');
@@ -21,6 +22,7 @@ export function HomeScreen({
   onNewGame: () => void;
   onHistory: () => void;
 }) {
+  const [showRules, setShowRules] = useState(false);
   // Android only: iOS apps must not quit themselves (App Store rule), and a web page can't close its tab.
   const canExit = Platform.OS === 'android';
   const confirmExit = () =>
@@ -32,8 +34,9 @@ export function HomeScreen({
         { text: 'Exit', style: 'destructive', onPress: () => BackHandler.exitApp() },
       ],
     );
+  if (showRules) return <RulesScreen onClose={() => setShowRules(false)} />;
   return (
-    <Screen title="">
+    <Screen title="" onInfo={() => setShowRules(true)}>
       <View style={styles.hero}>
         <Text style={styles.logo}>🎯</Text>
         <Text style={styles.title}>Dart Scoreboard</Text>

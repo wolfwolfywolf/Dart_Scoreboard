@@ -8,6 +8,8 @@ import { possibleFinishDartCounts, replayX01, threeDartAverage } from '../game/x
 import { DartKeypad } from '../components/DartKeypad';
 import { TotalKeypad } from '../components/TotalKeypad';
 import { X01StatsTable } from '../components/Stats';
+import { THROWER_LABEL_LARGE_HEIGHT, ThrowerLabel } from '../components/ThrowerLabel';
+import { RulesScreen } from './RulesScreen';
 import { Button, Screen, Segmented } from '../components/ui';
 import { CheckoutChartScreen } from './CheckoutChartScreen';
 import { keyHeightFor, useLayout } from '../layout';
@@ -36,6 +38,7 @@ export function X01GameScreen({
   const { setup } = game;
   const state = useMemo(() => replayX01(setup, game.events), [setup, game.events]);
   const [mode, setMode] = useState<'dart' | 'total'>('dart');
+  const [showRules, setShowRules] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalEntry, setTotalEntry] = useState('');
   const [pendingFinish, setPendingFinish] = useState<{ total: number; counts: number[] } | null>(null);
@@ -78,7 +81,7 @@ export function X01GameScreen({
   const keypadRows = mode === 'dart' ? 6 : 7;
   const cardRows = n >= 4 ? Math.ceil(n / 2) : 1;
   const estimatedScoreboard = 40 + cardRows * (compact ? 100 : big ? 160 : 130) + 76;
-  const scoreboardSpace = twoPane ? 0 : (scoreboardH ?? estimatedScoreboard);
+  const scoreboardSpace = twoPane ? THROWER_LABEL_LARGE_HEIGHT : (scoreboardH ?? estimatedScoreboard);
   const reserved = insets.top + insets.bottom + 52 + spacing * 2 + scoreboardSpace + modeRowH + 16;
   const keyHeight = keyHeightFor(height - reserved, keypadRows, 34, isWide ? 72 : 60);
 
@@ -199,9 +202,13 @@ export function X01GameScreen({
           })}
           <Text style={styles.turnSum}>{state.turnStartScore - remaining}</Text>
         </View>
-        <Text style={styles.info} numberOfLines={1}>
-          {lastTurn ? describeTurn(lastTurn.scored, lastTurn.bust, lastTurn.thrower) : `${state.thrower} to throw`}
-        </Text>
+        {/* Who's up, large; the last turn's result beside it. Side by side, who's up sits above the keypad instead. */}
+        <View style={styles.infoRow}>
+          {!state.finished && !twoPane ? <ThrowerLabel name={state.thrower} style={styles.thrower} /> : null}
+          <Text style={[styles.info, !twoPane && styles.infoAside]} numberOfLines={1}>
+            {lastTurn ? describeTurn(lastTurn.scored, lastTurn.bust, lastTurn.thrower) : ''}
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -253,6 +260,7 @@ export function X01GameScreen({
       </View>
 
       <View style={styles.keypad}>
+        {twoPane && !state.finished ? <ThrowerLabel name={state.thrower} large /> : null}
         {mode === 'dart' ? (
           <DartKeypad numbers={NUMBERS} onDart={onDart} onUndo={onUndo} canUndo={canUndo} keyHeight={keyHeight} />
         ) : (
@@ -270,8 +278,10 @@ export function X01GameScreen({
     </View>
   );
 
+  if (showRules) return <RulesScreen initial="x01" onClose={() => setShowRules(false)} />;
+
   return (
-    <Screen title={title} onBack={onBack} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />} fullWidth={twoPane}>
+    <Screen title={title} onBack={onBack} onInfo={() => setShowRules(true)} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />} fullWidth={twoPane}>
       {twoPane ? (
         <View style={styles.panes}>
           {scoreboard}
@@ -370,7 +380,10 @@ const styles = StyleSheet.create({
   dartSlotFilled: { backgroundColor: colors.card, borderColor: colors.accent },
   dartText: { color: colors.text, fontSize: 18, fontWeight: '700' },
   turnSum: { color: colors.muted, fontSize: 22, fontWeight: '800', marginLeft: 'auto', fontVariant: ['tabular-nums'] },
-  info: { color: colors.accent, fontSize: 16, fontWeight: '600', minHeight: 20 },
+  infoRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10, minHeight: 20 },
+  thrower: { maxWidth: '65%' },
+  info: { color: colors.accent, fontSize: 16, fontWeight: '600' },
+  infoAside: { color: colors.muted, fontSize: 14, marginLeft: 'auto', flexShrink: 1 },
   modeRow: { marginVertical: 8, gap: 6 },
   modeRowStacked: { gap: 8 },
   modeRowInline: { flexDirection: 'row', alignItems: 'stretch', gap: 8 },
