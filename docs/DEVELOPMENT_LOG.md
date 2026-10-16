@@ -354,6 +354,11 @@ upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
   rejects iOS apps that quit themselves, and the web can't close its tab);
   also in 1.1.0. Calls `BackHandler.exitApp()`, the same as Back on the
   home screen; the current game is already saved after every dart.
+- 2026-10-16: wolfyspub.com became a studio front page with a card for
+  each product (Dart Scoreboard, OZZI Golf, Football Pool Manager, Wolfy's
+  Derby Game). The Dart Scoreboard landing moved to `/dart-scoreboard`;
+  the privacy and support URLs did not change. When Play approves the
+  app, update both the badges on `/dart-scoreboard` and its card on `/`.
 - 2026-10-15: iOS target added (bundle ID `com.wolfyspub.dartscoreboard`,
   iPad supported). Simulator build compiles in CI. Next: Apple Developer
   Program enrolment (individual vs organization decides the seller name),
