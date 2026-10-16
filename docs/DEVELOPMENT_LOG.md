@@ -155,6 +155,7 @@ refer to this repository's `main` branch.
 | (cricket-lines PR) | Cricket: chalk line between rows; mark cells stretch to the row so the active column's highlight is unbroken (part of 1.1.0). |
 | (rules PR) | Rules screen: a round "i" in the header of the home, setup and game screens opens how each game is played and scored (Basics, x01, Cricket, Shanghai tabs), on the current game's tab (part of 1.1.0). |
 | (rules PR, 2nd commit) | Bigger "X to throw" on every game, above the keypad on tablet landscape; border around the active Cricket column (part of 1.1.0). |
+| (exit-app PR) | Home screen "Exit app" button (Android only), with a confirmation that notes a game in progress stays saved (part of 1.1.0). |
 | (iOS support PR) | iOS target: export-compliance flag, `expo-system-ui` for the dark root view, keyboard-safe setup screen, GitHub Actions (checks + macOS simulator build), `docs/APP_STORE.md`. |
 
 ## 5. Bugs, causes, and lessons
@@ -349,6 +350,10 @@ upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
 - 2026-10-15: Rules screen (the "i" button); also in 1.1.0.
 - 2026-10-16: Bigger thrower name and the Cricket active-column border,
   from testing on a tablet in landscape; also in 1.1.0.
+- 2026-10-15: Exit app button on the home screen (Android only: Apple
+  rejects iOS apps that quit themselves, and the web can't close its tab);
+  also in 1.1.0. Calls `BackHandler.exitApp()`, the same as Back on the
+  home screen; the current game is already saved after every dart.
 - 2026-10-15: iOS target added (bundle ID `com.wolfyspub.dartscoreboard`,
   iPad supported). Simulator build compiles in CI. Next: Apple Developer
   Program enrolment (individual vs organization decides the seller name),
