@@ -74,3 +74,46 @@ footer.site a { color: var(--muted); }
 @media (max-width: 420px) {
   .product { flex-direction: column; }
 }
+/* Wolfy's Derby page: green felt, wood, brass and cream, from the game's art. */
+body.derby {
+  --bg: #16220f;
+  --card: #22331a;
+  --border: #4a2a11;
+  --text: #f3e7c6;
+  --muted: #d6c8a3;
+  --accent: #e2c690;
+  --accent-text: #2a1a08;
+}
+.derby h1, .derby h2, .derby .eyebrow {
+  font-family: Georgia, "Times New Roman", serif;
+  font-variant: small-caps;
+  letter-spacing: .06em;
+  text-shadow: 0 2px 2px rgba(0,0,0,.5);
+}
+.derby-hero { grid-template-columns: 1.1fr 1fr; }
+.derby-hero img { max-width: 100%; aspect-ratio: auto; border-radius: 10px; }
+.derby .eyebrow { color: var(--accent); margin: 0 0 4px; font-size: 18px; }
+.derby .tagline { font-family: Georgia, serif; font-style: italic; color: var(--accent); margin: 0 0 16px; }
+.facts { list-style: none; padding: 0; margin: 0 0 20px; display: flex; flex-wrap: wrap; gap: 8px; }
+.facts li { border: 1px solid var(--accent); color: var(--accent); border-radius: 999px; padding: 2px 12px; font-size: 14px; font-weight: 600; }
+.derby-section { padding: 24px 0; }
+.derby-section h2 { font-size: 30px; margin: 0 0 12px; }
+.derby-section h3 { font-size: 19px; margin: 20px 0 6px; }
+.derby-section p, .derby-section li { color: var(--muted); }
+.derby-section img { width: 100%; height: auto; border-radius: 10px; display: block; }
+.derby-section img.wide { margin-top: 20px; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+.steps { padding-left: 22px; }
+.steps li { margin-bottom: 8px; }
+img.divider { width: 100%; height: auto; display: block; margin: 16px 0; }
+.lanes { list-style: none; padding: 0; margin: 0 0 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+.lanes li { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 600; line-height: 1.2; }
+.lanes small { display: block; color: var(--muted); font-weight: 400; font-size: 13px; }
+.disc { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: #f3e7c6; font: 700 18px Georgia, serif; border: 2px solid #e2c690; }
+.derby-section img.dice { max-width: 300px; margin: 0 auto; }
+.notify { background: var(--card); border: 2px solid var(--border); border-radius: 16px; padding: 24px; margin: 24px 0 48px; text-align: center; }
+@media (max-width: 720px) {
+  .split { grid-template-columns: 1fr; }
+  .derby-hero { grid-template-columns: 1fr; }
+  .facts { justify-content: center; }
+}

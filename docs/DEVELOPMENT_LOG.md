@@ -356,7 +356,10 @@ upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
   home screen; the current game is already saved after every dart.
 - 2026-10-16: wolfyspub.com became a studio front page with a card for
   each product (Dart Scoreboard, OZZI Golf, Football Pool Manager, Wolfy's
-  Derby Game). The Dart Scoreboard landing moved to `/dart-scoreboard`;
+  Derby). The Dart Scoreboard landing moved to `/dart-scoreboard`;
+  Wolfy's Derby (a physical board game, not yet manufactured) has its own
+  page at `/wolfys-derby` built from `docs/WOLFYS_DERBY_BRIEF.md`: no buy
+  button or price until it is for sale, and no Kentucky Derby cues;
   the privacy and support URLs did not change. When Play approves the
   app, update both the badges on `/dart-scoreboard` and its card on `/`.
 - 2026-10-15: iOS target added (bundle ID `com.wolfyspub.dartscoreboard`,

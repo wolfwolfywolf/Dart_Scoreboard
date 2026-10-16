@@ -1,9 +1,11 @@
 # WolfysPub.com
 
 Static site: the WolfysPub Games front page (`index.html`, one card per
-product: Dart Scoreboard, OZZI Golf, Football Pool Manager, Wolfy's Derby
-Game), the Dart Scoreboard page (`dart-scoreboard/`), its privacy policy and
-support page. Plain HTML and CSS, no build step.
+product: Dart Scoreboard, OZZI Golf, Football Pool Manager, Wolfy's Derby),
+the Dart Scoreboard page (`dart-scoreboard/`) with its privacy policy and
+support page, and the Wolfy's Derby page (`wolfys-derby/`, art in
+`assets/wolfys-derby/`, facts and status rules in
+`docs/WOLFYS_DERBY_BRIEF.md`). Plain HTML and CSS, no build step.
 
 Deployed on Vercel with **Root Directory** set to `site`. Each page is a
 folder with an `index.html`, so `/dart-scoreboard/privacy` works without
