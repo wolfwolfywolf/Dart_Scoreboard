@@ -4,6 +4,7 @@ import type { CricketScoring, GameSetup, Player } from '../types';
 import { shanghaiLabel } from '../game/shanghai';
 import { isTeam, newId } from '../game/darts';
 import { Button, Chip, Label, Screen, Segmented } from '../components/ui';
+import { RulesScreen } from './RulesScreen';
 import { colors, radius } from '../theme';
 
 type GameFamily = 'x01' | 'cricket' | 'shanghai';
@@ -27,6 +28,7 @@ export function SetupScreen({
   initial?: GameSetup;
 }) {
   const [family, setFamily] = useState<GameFamily>(initial?.kind ?? 'x01');
+  const [showRules, setShowRules] = useState(false);
   const [startScore, setStartScore] = useState<StartScore>(
     initial?.kind === 'x01' && [301, 501, 701].includes(initial.startScore) ? (initial.startScore as StartScore) : 501,
   );
@@ -101,8 +103,10 @@ export function SetupScreen({
 
   const suggestions = recentPlayers.filter((n) => !people.includes(n));
 
+  if (showRules) return <RulesScreen initial={family} onClose={() => setShowRules(false)} />;
+
   return (
-    <Screen title="New game" onBack={onBack} scroll>
+    <Screen title="New game" onBack={onBack} onInfo={() => setShowRules(true)} scroll>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets>
         <Label>Game</Label>
         <Segmented

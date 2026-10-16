@@ -6,11 +6,14 @@ import { CRICKET_NUMBERS, replayCricket } from '../game/cricket';
 import { dartLabel } from '../game/darts';
 import { DartKeypad } from '../components/DartKeypad';
 import { CricketStatsTable } from '../components/Stats';
+import { THROWER_LABEL_LARGE_HEIGHT, ThrowerLabel } from '../components/ThrowerLabel';
+import { RulesScreen } from './RulesScreen';
 import { Button, Screen } from '../components/ui';
 import { keyHeightFor, useLayout } from '../layout';
 import { chalk, colors, fonts, radius, spacing } from '../theme';
 import { Chalkboard } from '../components/Chalkboard';
 
+const BOARD_PADDING = 6;
 const MARK_GLYPH = ['', '/', 'X', 'Ⓧ'];
 
 export function CricketGameScreen({
@@ -66,13 +69,25 @@ export function CricketGameScreen({
   const { width, height, isWide, twoPane } = useLayout();
   const insets = useSafeAreaInsets();
   const [boardH, setBoardH] = useState<number | null>(null);
+  const [showRules, setShowRules] = useState(false);
+  // Where each side's column sits across the board, measured from its heading cell, so the
+  // active side gets one chalk border around its whole column (as Shanghai/x01 cards do).
+  const [columnsX, setColumnsX] = useState<{ x: number; w: number }[]>([]);
+  const measureColumn = (i: number, x: number, w: number) =>
+    setColumnsX((prev) => {
+      if (prev[i] && prev[i].x === x && prev[i].w === w) return prev;
+      const next = [...prev];
+      next[i] = { x, w };
+      return next;
+    });
+  const activeColumn = state.finished ? undefined : columnsX[p];
   const keypadPaneWidth = Math.min(460, Math.max(360, width * 0.45));
   // Side by side: four keypad rows (multiplier + three of keys) centred beside a board
   // that stretches to fill the column. Stacked: the board keeps its natural height and
   // the keys use whatever is left below it.
   const chrome = insets.top + insets.bottom + 52 + spacing * 2 + 16;
   const keyHeight = twoPane
-    ? keyHeightFor(height - chrome - 60, 4, 38, 96)
+    ? keyHeightFor(height - chrome - 60 - THROWER_LABEL_LARGE_HEIGHT, 4, 38, 96)
     : keyHeightFor(height - chrome - (boardH ?? 330), 4, 38, isWide ? 72 : 60);
   const tall = twoPane;
   const boardRowHeight = tall ? Math.max(30, (height - 200) / 8) : undefined;
@@ -86,7 +101,11 @@ export function CricketGameScreen({
           {arrange(
             <View key="num" style={styles.numberCell} />,
             setup.players.map((pl, i) => (
-              <Pressable key={pl.id} {...passProps(i, pl.name)} style={[styles.playerCell, i === p && !state.finished && styles.activeCol]}>
+              <Pressable
+                key={pl.id}
+                {...passProps(i, pl.name)}
+                onLayout={(e) => measureColumn(i, e.nativeEvent.layout.x, e.nativeEvent.layout.width)}
+                style={[styles.playerCell, i === p && !state.finished && styles.activeCol]}>
                 <Text style={[styles.playerName, i === p && { color: chalk.yellow }]} numberOfLines={1}>
                   {pl.name}
                 </Text>
@@ -127,6 +146,9 @@ export function CricketGameScreen({
             </View>
           );
         })}
+        {activeColumn ? (
+          <View style={[styles.activeBorder, { left: BOARD_PADDING + activeColumn.x, width: activeColumn.w }]} />
+        ) : null}
       </View>
       </Chalkboard>
 
@@ -139,13 +161,14 @@ export function CricketGameScreen({
             </View>
           );
         })}
-        <Text style={styles.toThrow}>{state.thrower} to throw</Text>
       </View>
+      {!state.finished && !twoPane ? <ThrowerLabel name={state.thrower} style={styles.toThrow} /> : null}
     </View>
   );
 
   const keypad = (
     <View style={twoPane ? [styles.paneRight, { width: keypadPaneWidth, justifyContent: 'center' }] : styles.keypad}>
+      {twoPane && !state.finished ? <ThrowerLabel name={state.thrower} large /> : null}
       <DartKeypad
         numbers={[20, 19, 18, 17, 16, 15]}
         onDart={onDart}
@@ -157,8 +180,10 @@ export function CricketGameScreen({
     </View>
   );
 
+  if (showRules) return <RulesScreen initial="cricket" onClose={() => setShowRules(false)} />;
+
   return (
-    <Screen title="Cricket" onBack={onBack} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />} fullWidth={twoPane}>
+    <Screen title="Cricket" onBack={onBack} onInfo={() => setShowRules(true)} right={<Button title="End" variant="ghost" small onPress={confirmEnd} />} fullWidth={twoPane}>
       {twoPane ? (
         <View style={styles.panes}>
           {board}
@@ -189,7 +214,7 @@ export function CricketGameScreen({
 }
 
 const styles = StyleSheet.create({
-  board: { padding: 6 },
+  board: { padding: BOARD_PADDING },
   boardTall: { flex: 1 },
   row: { flexDirection: 'row', alignItems: 'center' },
   // A chalk line above every number row separates the rows; cells stretch to the lines so
@@ -203,6 +228,15 @@ const styles = StyleSheet.create({
   points: { color: chalk.white, fontSize: 26, fontFamily: fonts.chalk },
   markCell: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 4 },
   activeCol: { backgroundColor: chalk.highlight },
+  activeBorder: {
+    position: 'absolute',
+    pointerEvents: 'none',
+    top: BOARD_PADDING,
+    bottom: BOARD_PADDING,
+    borderWidth: 1.5,
+    borderColor: chalk.yellow,
+    borderRadius: 6,
+  },
   mark: { color: chalk.white, fontSize: 22, fontFamily: fonts.chalkHand, minHeight: 28 },
   turnDarts: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 },
   dartSlot: {
@@ -216,7 +250,7 @@ const styles = StyleSheet.create({
   },
   dartSlotFilled: { backgroundColor: colors.card, borderColor: colors.accent },
   dartText: { color: colors.text, fontSize: 18, fontWeight: '700' },
-  toThrow: { color: colors.accent, fontWeight: '600', marginLeft: 'auto', fontSize: 15 },
+  toThrow: { marginTop: 6 },
   keypad: { flex: 1, justifyContent: 'flex-end' },
   panes: { flex: 1, flexDirection: 'row', gap: spacing },
   paneLeft: { flex: 1, alignSelf: 'stretch' },

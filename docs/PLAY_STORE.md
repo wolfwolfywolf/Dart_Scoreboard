@@ -150,6 +150,8 @@ count. Works in 301/501/701, Cricket and Shanghai.
 Cricket with two players or teams now shows the numbers down the middle,
 with one side's marks and score on each side, and chalk lines now
 separate the rows.
+New: the rules of each game behind the i button. Who's up is shown
+bigger, and Cricket boxes the side that's up.
 ```
 
 ### 1.0.0 (version code 2), 2026-10-15
