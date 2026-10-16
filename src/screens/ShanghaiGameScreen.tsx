@@ -7,6 +7,7 @@ import { replayShanghai, shanghaiLabel } from '../game/shanghai';
 import { DartKeypad } from '../components/DartKeypad';
 import { ShanghaiStatsTable } from '../components/Stats';
 import { Chalkboard } from '../components/Chalkboard';
+import { THROWER_LABEL_LARGE_HEIGHT, ThrowerLabel } from '../components/ThrowerLabel';
 import { RulesScreen } from './RulesScreen';
 import { Button, Screen } from '../components/ui';
 import { keyHeightFor, useLayout } from '../layout';
@@ -49,7 +50,8 @@ export function ShanghaiGameScreen({
   const cardRowsList: number[][] = [];
   for (let i = 0; i < n; i += columns) cardRowsList.push(setup.players.map((_, idx) => idx).slice(i, i + columns));
   const estimated = 40 + (n >= 4 ? Math.ceil(n / 2) : 1) * (compact ? 100 : 130) + 60 + 76;
-  const reserved = insets.top + insets.bottom + 52 + spacing * 2 + (twoPane ? 0 : (scoreboardH ?? estimated)) + 16;
+  const reserved =
+    insets.top + insets.bottom + 52 + spacing * 2 + (twoPane ? THROWER_LABEL_LARGE_HEIGHT : (scoreboardH ?? estimated)) + 16;
   const keyHeight = keyHeightFor(height - reserved, 6, 34, isWide ? 72 : 60);
 
   const onDart = (v: number, m: Multiplier) => onEvent({ t: 'dart', v, m });
@@ -132,14 +134,15 @@ export function ShanghaiGameScreen({
               </View>
             );
           })}
-          {!state.finished ? <Text style={styles.toThrow}>{state.thrower} to throw</Text> : null}
         </View>
+        {!state.finished && !twoPane ? <ThrowerLabel name={state.thrower} style={styles.toThrow} /> : null}
       </View>
     </View>
   );
 
   const keypad = (
     <View style={twoPane ? [styles.paneRight, { width: keypadPaneWidth }] : styles.keypad}>
+      {twoPane && !state.finished ? <ThrowerLabel name={state.thrower} large /> : null}
       <DartKeypad
         numbers={NUMBERS}
         onDart={onDart}
@@ -222,7 +225,7 @@ const styles = StyleSheet.create({
   dartSlot: { width: 64, height: 40, borderRadius: 10, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   dartSlotFilled: { backgroundColor: colors.card, borderColor: colors.accent },
   dartText: { color: colors.text, fontSize: 18, fontWeight: '700' },
-  toThrow: { color: colors.accent, fontWeight: '600', marginLeft: 'auto', fontSize: 15 },
+  toThrow: { marginTop: 6 },
 
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', padding: 16 },
   sheet: { backgroundColor: colors.card, borderRadius: radius, padding: 16, gap: 8 },

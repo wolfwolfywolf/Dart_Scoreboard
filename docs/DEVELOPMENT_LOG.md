@@ -154,6 +154,7 @@ refer to this repository's `main` branch.
 | (cricket-center PR) | Cricket with two sides: numbers column in the middle, one side's marks and score either side (part of 1.1.0). |
 | (cricket-lines PR) | Cricket: chalk line between rows; mark cells stretch to the row so the active column's highlight is unbroken (part of 1.1.0). |
 | (rules PR) | Rules screen: a round "i" in the header of the home, setup and game screens opens how each game is played and scored (Basics, x01, Cricket, Shanghai tabs), on the current game's tab (part of 1.1.0). |
+| (rules PR, 2nd commit) | Bigger "X to throw" on every game, above the keypad on tablet landscape; border around the active Cricket column (part of 1.1.0). |
 | (iOS support PR) | iOS target: export-compliance flag, `expo-system-ui` for the dark root view, keyboard-safe setup screen, GitHub Actions (checks + macOS simulator build), `docs/APP_STORE.md`. |
 
 ## 5. Bugs, causes, and lessons
@@ -226,8 +227,16 @@ refer to this repository's `main` branch.
   separates the number rows. Active
   player/team in yellow chalk; in doubles the teammate on the oche has an
   arrow. Marks per round is *not* shown on the board (only in stats).
-- Under the cards: three dart slots for the current turn and "X to throw"
-  on the right, on every game screen.
+- Under the cards: three dart slots for the current turn, then "X to throw"
+  (`ThrowerLabel`, name large) on its own line; x01 puts the last turn's
+  result to its right. Side by side (tablet landscape) the label moves to
+  the keypad pane, large and centred directly above the keys, and the key
+  sizing reserves `THROWER_LABEL_LARGE_HEIGHT` for it.
+- Cricket: the side that's up gets a yellow chalk border around its whole
+  column, like the active x01/Shanghai card. The column is a stack of row
+  cells, so the border is one absolutely positioned overlay placed from the
+  measured heading cell (`onLayout`), not per-cell borders (which would
+  break at every row line).
 - Tapping the side of whoever throws next (their x01/Shanghai card, or
   anywhere in their Cricket column) ends the current turn exactly as ✓
   would: darts entered stand, the rest are misses. x01 has no ✓ key, so
@@ -338,6 +347,8 @@ upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
   rides along in 1.1.0 (no extra version bump).
 - 2026-10-15: Chalk lines between the Cricket rows; also in 1.1.0.
 - 2026-10-15: Rules screen (the "i" button); also in 1.1.0.
+- 2026-10-16: Bigger thrower name and the Cricket active-column border,
+  from testing on a tablet in landscape; also in 1.1.0.
 - 2026-10-15: iOS target added (bundle ID `com.wolfyspub.dartscoreboard`,
   iPad supported). Simulator build compiles in CI. Next: Apple Developer
   Program enrolment (individual vs organization decides the seller name),
