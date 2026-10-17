@@ -60,8 +60,9 @@ Suggested page title: `Wolfy's Derby — A Horse Racing Dice Game`
 > doesn't matter who rolled — every horse named by a die moves. There are no decisions
 > to make, which is exactly why a young child can play it on equal terms with an adult.
 >
-> With fewer than six players some horses run riderless. If one of those wins, nobody
-> collects and the whole pot rolls over into the next race, which gets loud fast.
+> With fewer than six players some horses go undrawn, and they still run. If one of
+> those wins, nobody collects: the pot stays, everyone antes again, and the next race
+> is worth double, which gets loud fast.
 
 ---
 
@@ -75,7 +76,13 @@ Suggested page title: `Wolfy's Derby — A Horse Racing Dice Game`
 5. If two horses cross on the same roll, they split it.
 
 House rules worth mentioning: **Full Field** (2–3 players draw two horses each),
-**High Stakes** (ante two chips), **Triple Crown** (best of three races).
+**High Stakes** (ante two chips), **Triple Crown** (three races, biggest stack wins),
+**Long Odds** (name a second horse; if it wins, take half the pot).
+
+*2026-10-17: the rules sheet was revised. "Riderless horses" became "Horses Nobody
+Drew" (never say riderless), photo finishes can be three-way, an undrawn winner means
+everyone antes again for a double pot, and "If You Are Teaching" was added. The
+rules sheet image on the site is the source of truth where this brief differs.*
 
 ---
 
