@@ -362,6 +362,9 @@ upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
   button or price until it is for sale, and no Kentucky Derby cues;
   the privacy and support URLs did not change. When Play approves the
   app, update both the badges on `/dart-scoreboard` and its card on `/`.
+- 2026-10-17: Wolfy's Derby page matched to the revised rules sheet
+  ("Horses Nobody Drew", never "riderless"; three-way photo finish; Long
+  Odds house rule; If You Are Teaching).
 - 2026-10-15: iOS target added (bundle ID `com.wolfyspub.dartscoreboard`,
   iPad supported). Simulator build compiles in CI. Next: Apple Developer
   Program enrolment (individual vs organization decides the seller name),
