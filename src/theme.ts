@@ -26,6 +26,8 @@ export const chalk = {
   dim: 'rgba(243, 239, 228, 0.6)',
   line: 'rgba(243, 239, 228, 0.35)',
   yellow: '#ffe27a',
+  /** Outline around the side that's throwing. */
+  gold: '#f4b400',
   highlight: 'rgba(255, 226, 122, 0.12)',
   frame: '#6b4423',
   frameEdge: '#8a5a30',

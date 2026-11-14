@@ -23,6 +23,14 @@ export function Chalkboard({ style, fill, children }: { style?: StyleProp<ViewSt
   );
 }
 
+/**
+ * Bold gold outline marking the side that's throwing. Drawn over the card (absolute,
+ * so it never shifts the card's contents) just inside the card's own border.
+ */
+export function ActiveOutline() {
+  return <View style={styles.activeOutline} />;
+}
+
 const styles = StyleSheet.create({
   frame: {
     backgroundColor: chalk.frame,
@@ -35,4 +43,15 @@ const styles = StyleSheet.create({
   slate: { alignSelf: 'stretch', borderRadius: 6, overflow: 'hidden', backgroundColor: chalk.slate },
   slateFill: { flex: 1 },
   slateImage: { borderRadius: 6 },
+  activeOutline: {
+    position: 'absolute',
+    pointerEvents: 'none',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderWidth: 2.5,
+    borderColor: chalk.gold,
+    borderRadius: 5,
+  },
 });
