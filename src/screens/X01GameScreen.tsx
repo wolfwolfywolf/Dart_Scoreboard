@@ -14,7 +14,7 @@ import { Button, Screen, Segmented } from '../components/ui';
 import { CheckoutChartScreen } from './CheckoutChartScreen';
 import { keyHeightFor, useLayout } from '../layout';
 import { chalk, colors, fonts, radius, spacing } from '../theme';
-import { Chalkboard } from '../components/Chalkboard';
+import { ActiveOutline, Chalkboard } from '../components/Chalkboard';
 
 const NUMBERS = Array.from({ length: 20 }, (_, i) => i + 1);
 
@@ -182,6 +182,7 @@ export function X01GameScreen({
                 </View>
               ) : null}
               <Text style={styles.avg}>avg {threeDartAverage(state.stats[i]).toFixed(1)}</Text>
+              {active ? <ActiveOutline /> : null}
             </Pressable>
           );
         })}
@@ -353,7 +354,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: chalk.line,
   },
-  cardActive: { backgroundColor: chalk.highlight, borderColor: chalk.yellow },
+  cardActive: { backgroundColor: chalk.highlight, borderColor: chalk.gold },
   cardCompact: { padding: 8 },
   nameCompact: { fontSize: 15 },
   scoreCompact: { fontSize: 36, lineHeight: 42 },

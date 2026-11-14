@@ -6,7 +6,7 @@ import { dartLabel, isTeam } from '../game/darts';
 import { replayShanghai, shanghaiLabel } from '../game/shanghai';
 import { DartKeypad } from '../components/DartKeypad';
 import { ShanghaiStatsTable } from '../components/Stats';
-import { Chalkboard } from '../components/Chalkboard';
+import { ActiveOutline, Chalkboard } from '../components/Chalkboard';
 import { THROWER_LABEL_LARGE_HEIGHT, ThrowerLabel } from '../components/ThrowerLabel';
 import { RulesScreen } from './RulesScreen';
 import { Button, Screen } from '../components/ui';
@@ -105,6 +105,7 @@ export function ShanghaiGameScreen({
                       </View>
                     ) : null}
                     <Text style={styles.sub}>{thisRound === undefined ? ' ' : `this round ${thisRound}`}</Text>
+                    {active ? <ActiveOutline /> : null}
                   </Pressable>
                 );
               })}
@@ -203,7 +204,7 @@ const styles = StyleSheet.create({
   cards: { gap: 8, padding: 8, paddingBottom: 4 },
   cardRow: { flexDirection: 'row', gap: 8 },
   card: { flex: 1, borderRadius: 6, padding: 10, borderWidth: 1.5, borderColor: chalk.line },
-  cardActive: { backgroundColor: chalk.highlight, borderColor: chalk.yellow },
+  cardActive: { backgroundColor: chalk.highlight, borderColor: chalk.gold },
   cardCompact: { padding: 8 },
   name: { color: chalk.white, fontSize: 18, fontFamily: fonts.chalkHand },
   nameCompact: { fontSize: 15 },

@@ -151,7 +151,7 @@ Cricket with two players or teams now shows the numbers down the middle,
 with one side's marks and score on each side, and chalk lines now
 separate the rows.
 New: the rules of each game behind the i button. Who's up is shown
-bigger, and Cricket boxes the side that's up.
+bigger, with a gold outline around their side.
 Exit button on the home screen.
 ```
 
