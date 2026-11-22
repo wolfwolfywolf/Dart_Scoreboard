@@ -371,6 +371,9 @@ upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
   `docs/WOLFYS_DERBY_BRIEF.md`; the how-to-play text still follows the
   current rules sheet image ("Horses Nobody Drew"), which is more detailed
   than the brief's summary. `box-back.jpg` removed.
+  Same day, WOLFY sent the Standard Edition listing
+  (thegamecrafter.com/games/wolfy-s-derby-standard-edition), so both
+  editions now have buy buttons; this overrides the brief's "coming soon".
 - 2026-10-15: iOS target added (bundle ID `com.wolfyspub.dartscoreboard`,
   iPad supported). Simulator build compiles in CI. Next: Apple Developer
   Program enrolment (individual vs organization decides the seller name),
