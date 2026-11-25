@@ -365,6 +365,15 @@ upload) is in `docs/PLAY_STORE.md` → Updates. Icons regenerate with
 - 2026-10-17: Wolfy's Derby page matched to the revised rules sheet
   ("Horses Nobody Drew", never "riderless"; three-way photo finish; Long
   Odds house rule; If You Are Teaching).
+- 2026-11-22: Wolfy's Derby Premium Edition on sale ($56.99, buy button to
+  The Game Crafter); Standard Edition ($20.99) shown as coming soon with an
+  email notify link and no launch date. New brief replaces the old one in
+  `docs/WOLFYS_DERBY_BRIEF.md`; the how-to-play text still follows the
+  current rules sheet image ("Horses Nobody Drew"), which is more detailed
+  than the brief's summary. `box-back.jpg` removed.
+  Same day, WOLFY sent the Standard Edition listing
+  (thegamecrafter.com/games/wolfy-s-derby-standard-edition), so both
+  editions now have buy buttons; this overrides the brief's "coming soon".
 - 2026-10-15: iOS target added (bundle ID `com.wolfyspub.dartscoreboard`,
   iPad supported). Simulator build compiles in CI. Next: Apple Developer
   Program enrolment (individual vs organization decides the seller name),
